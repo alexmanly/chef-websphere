@@ -32,15 +32,25 @@ class Chef
         execute "start_dmgr_#{new_resource.profile_name}" do
           command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/startManager.sh"
           cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          only_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/startManager.sh") end
+          guard_interpreter :bash
+          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh dmgr "\
+                 "-profileName #{new_resource.profile_name} "\
+                 "-username #{new_resource.admin_username} "\
+                 "-password #{new_resource.admin_password} | grep STARTED"
         end
       end
 
       action :stop_dmgr do
         execute "stop_dmgr_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/stopManager.sh -user #{new_resource.admin_username} -password #{new_resource.admin_password}"
+          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/stopManager.sh "\
+                  "-user #{new_resource.admin_username} "\
+                  "-password #{new_resource.admin_password}"
           cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          only_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/stopManager.sh") end
+          guard_interpreter :bash
+          only_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh dmgr "\
+                  "-profileName #{new_resource.profile_name} "\
+                  "-username #{new_resource.admin_username} "\
+                  "-password #{new_resource.admin_password} | grep STARTED"
         end
       end
 
@@ -65,7 +75,11 @@ class Chef
         execute "start_node_#{new_resource.profile_name}" do
           command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/startNode.sh"
           cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          only_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/startNode.sh") end
+          guard_interpreter :bash
+          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh nodeagent "\
+                  "-profileName #{new_resource.profile_name} "\
+                  "-username #{new_resource.admin_username} "\
+                  "-password #{new_resource.admin_password} | grep STARTED"
         end
       end
 
@@ -73,7 +87,11 @@ class Chef
         execute "stop_node_#{new_resource.profile_name}" do
           command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/stopNode.sh -user #{new_resource.admin_username} -password #{new_resource.admin_password}"
           cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          only_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/stopNode.sh") end
+          guard_interpreter :bash
+          only_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh nodeagent "\
+                  "-profileName #{new_resource.profile_name} "\
+                  "-username #{new_resource.admin_username} "\
+                  "-password #{new_resource.admin_password} | grep STARTED"
         end
       end
 
