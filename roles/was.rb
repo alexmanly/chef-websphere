@@ -4,7 +4,7 @@ run_list 'recipe[base-was]'
 override_attributes(
   :base_was => {
     :hostname => 'websphere',
-    :internal_ip => '10.0.0.91',
+    :internal_ip => '10.0.0.90',
     :packages => ['wget', 'unzip', 'gtk2.i686', 'libXtst.i686'],
     :ibm_home => '/opt/IBM',
     :iim => {

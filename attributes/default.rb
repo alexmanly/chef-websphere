@@ -1,5 +1,5 @@
 default[:base_was][:hostname] = 'websphere'
-default[:base_was][:internal_ip] = '10.0.0.91'
+default[:base_was][:internal_ip] = '10.0.0.90'
 default[:base_was][:hosts] =  {
 	'chefserver' => '10.0.0.10', 
 	'chefanalytics' => '10.0.0.20',
