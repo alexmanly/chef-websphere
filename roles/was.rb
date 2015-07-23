@@ -28,7 +28,8 @@ override_attributes(
           :enable_security => 'true',
           :admin_username => 'wasadmin',
           :admin_password => 'wasadmin',
-          :starting_port => '28000'
+          :starting_port => '28000',
+          :wsadmin_scripts => []
         },
         :node01 => {
           :type => 'managed',

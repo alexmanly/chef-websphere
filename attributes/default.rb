@@ -35,6 +35,8 @@ default[:base_was][:was][:profiles][:Dmgr01][:enable_security] = 'true'
 default[:base_was][:was][:profiles][:Dmgr01][:admin_username] = 'wasadmin'
 default[:base_was][:was][:profiles][:Dmgr01][:admin_password] = 'wasadmin'
 default[:base_was][:was][:profiles][:Dmgr01][:starting_port] = '28000'
+default[:base_was][:was][:profiles][:Dmgr01][:wsadmin_scripts] = [ ]
+
 
 default[:base_was][:was][:profiles][:node01][:type] = 'managed'
 default[:base_was][:was][:profiles][:node01][:cell] = 'cell01_default'

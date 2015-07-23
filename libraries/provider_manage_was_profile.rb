@@ -40,6 +40,24 @@ class Chef
         stop
       end
 
+      action :wsadmin do
+        cached_wsadmin_jython_file = ::File.join(Chef::Config[:file_cache_path], new_resource.wsadmin_jython_file)
+
+        template cached_wsadmin_jython_file do
+          source new_resource.wsadmin_jython_file
+        end
+
+        execute "Execute_WSAdmin_with_file_#{new_resource.wsadmin_jython_file}" do
+          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
+          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/wsadmin.sh "\
+                  "-lang jython "\
+                  "-f #{cached_wsadmin_jython_file} "\
+                  "-conntype SOAP "\
+                  "-user #{new_resource.admin_username} "\
+                  "-password #{new_resource.admin_password}"
+        end
+      end
+
       def create_profile_command
         cmd = "#{new_resource.install_dir}/bin/manageprofiles.sh -create "\
                   "-profileName #{new_resource.profile_name} "\
@@ -70,13 +88,14 @@ class Chef
       end
 
       def execute_command(manage_cmd, current_status)
+        type = new_resource.profile_type == 'dmgr' ? 'dmgr' : 'nodeagent'
         execute "#{manage_cmd}_#{new_resource.profile_type}_#{new_resource.profile_name}" do
           command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/#{manage_cmd}.sh "\
                   "-username #{new_resource.admin_username} "\
                   "-password #{new_resource.admin_password}"
           cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
           guard_interpreter :bash
-          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{new_resource.profile_type} "\
+          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{type} "\
                  "-profileName #{new_resource.profile_name} "\
                  "-username #{new_resource.admin_username} "\
                  "-password #{new_resource.admin_password} | grep #{current_status}"

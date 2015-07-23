@@ -6,7 +6,7 @@ class Chef
       provides :was_manage_profile
 
       self.resource_name = :was_manage_profile
-      actions :create, :delete, :start, :stop
+      actions :create, :delete, :start, :stop, :wsadmin
       default_action :start
 
       attribute :install_dir, :name_attribute => true, :kind_of => String
@@ -21,6 +21,7 @@ class Chef
       attribute :starting_port, :name_attribute => true, :kind_of => String
       attribute :dmgr_host, :name_attribute => true, :kind_of => String
       attribute :dmgr_port, :name_attribute => true, :kind_of => String
+      attribute :wsadmin_jython_file, :name_attribute => true, :kind_of => String
 
     end
   end
