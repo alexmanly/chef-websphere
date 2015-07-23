@@ -41,20 +41,36 @@ class Chef
       end
 
       action :wsadmin do
-        cached_wsadmin_jython_file = ::File.join(Chef::Config[:file_cache_path], new_resource.wsadmin_jython_file)
 
-        template cached_wsadmin_jython_file do
-          source new_resource.wsadmin_jython_file
+        # Create stripts directory in the cache
+        scripts_location = Chef::Config[:file_cache_path] + '/' + new_resource.profile_name
+        directory scripts_location do
+          recursive true
+          action :delete
+        end
+        directory scripts_location do
+          recursive true
+          action :create
         end
 
-        execute "Execute_WSAdmin_with_file_#{new_resource.wsadmin_jython_file}" do
-          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/wsadmin.sh "\
-                  "-lang jython "\
-                  "-f #{cached_wsadmin_jython_file} "\
-                  "-conntype SOAP "\
-                  "-user #{new_resource.admin_username} "\
-                  "-password #{new_resource.admin_password}"
+        # Copy all scripts from the templates scritps dir to the cache scripts dir
+        run_context.cookbook_collection['base-was'].manifest['templates'].each do |tmplt|
+          if tmplt['path'].include? new_resource.profile_name
+            template tmplt['name'] do
+              path scripts_location + '/' + tmplt['name']
+              source new_resource.profile_name + '/' + tmplt['name']
+            end
+
+            execute "execute_wasdmin_with_file_#{tmplt['name']}" do
+              cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
+              command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/wsadmin.sh "\
+                      "-lang jython "\
+                      "-f #{scripts_location}/#{tmplt['name']} "\
+                      "-conntype SOAP "\
+                      "-user #{new_resource.admin_username} "\
+                      "-password #{new_resource.admin_password}"
+            end
+          end
         end
       end
 
