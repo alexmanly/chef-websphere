@@ -43,3 +43,13 @@ default[:base_was][:was][:profiles][:node01][:dmgr_host] = node[:base_was][:was]
 default[:base_was][:was][:profiles][:node01][:admin_username] = node[:base_was][:was][:profiles][:Dmgr01][:admin_username]
 default[:base_was][:was][:profiles][:node01][:admin_password] = node[:base_was][:was][:profiles][:Dmgr01][:admin_password]
 default[:base_was][:was][:profiles][:node01][:dmgr_port] = '28003'
+
+default[:base_was][:was][:config][:node_name] = "node01"
+default[:base_was][:was][:config][:template_name] = "DB2 Universal JDBC Driver Provider (XA)"
+default[:base_was][:was][:config][:ds_name] = "myds" 
+default[:base_was][:was][:config][:cf_name] = "mycf"
+default[:base_was][:was][:config][:db_name] = "sampleDB"
+
+default[:base_was][:was][:config][:server_name] = "server01"
+default[:base_was][:was][:config][:application] = default[:base_was][:was][:install_dir] + "/installableApps/PerfServletApp.ear"
+default[:base_was][:was][:config][:application_name] = "PerfServletApp"

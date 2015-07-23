@@ -25,10 +25,12 @@ end
 
 execute "partx_#{node[:base_was][:device_id]}" do
   command "partx -a #{node[:base_was][:device_id]}"
+  not_if "/sbin/fdisk -l #{node[:base_was][:device_id]} | grep #{device}"
 end
 
 execute "partprobe_#{device}" do
   command "partprobe #{device}"
+  not_if "/sbin/fdisk -l #{node[:base_was][:device_id]} | grep #{device}"
 end
 
 execute 'mkfs' do

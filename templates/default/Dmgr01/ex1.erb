@@ -1,0 +1,177 @@
+# This program may be used, executed, copied, modified and distributed
+# without royalty for the purpose of developing, using, marketing, or distribution
+
+#-----------------------------------------------------------------
+# ex1.jacl - Jacl implementation of example script 1 
+#-----------------------------------------------------------------
+#
+#  The purpose of this example is to show a potentially useful
+#  sequence of common actions using the scripting client wsadmin.
+#  This example creates and modifies a server, loads an application
+#  onto the server, and starts the server.  We assume an environment
+#  in which the scripting client is attached to the Network Deployment
+#  manager, but much of this script could be used in a base install.
+#  
+#  This is a bi-modal script: it can be included in the wsadmin 
+#  command invocation like this:
+#     wsadmin -f ex1.jacl serverX nodeY c:/applicationZ myapp
+#
+#  or the script can be sourced from the wsadmin command line if:
+#     wsadmin> source ex1.jacl
+#     wsadmin> ex1 serverX nodeY c:/applicationZ myapp
+# 
+#  The script expects some parameters:
+#      arg1 - server name
+#      arg2 - node name
+#      arg3 - application 
+#      arg4 - application name (optional) 
+#
+#  This example demonstrates many wsadmin features:
+#
+#   - The use of the AdminApp object to install an application
+#   - The use of the AdminControl object to locate running MBeans 
+#   - The use of the AdminControl object to getAttributes from running MBeans 
+#   - The use of the AdminControl object to invoke operations on running MBeans 
+#   - The use of the AdminControl object's "startServer" command
+#   - The use of the AdminConfig object to create objects in the configuration
+#   - The use of the AdminConfig object to find objects in the configuration
+#   - The use of the AdminConfig object to modify objects in the configuration
+#   - The use of the AdminConfig object to save the configuration
+#   - Methods for saving and synchronizing the configuration.
+#-----------------------------------------------------------------
+
+proc ex1 {serverName nodeName args} {
+
+   #--------------------------------------------------------------
+   # check for optional argument 
+   #--------------------------------------------------------------
+   set app [lindex $args 0]
+   if {[llength $args] > 1} {
+      set appName [lindex $args 1]
+   } else {
+      set appName ""
+   }
+
+   #--------------------------------------------------------------
+   # set up globals
+   #--------------------------------------------------------------
+   global AdminConfig
+   global AdminControl
+   global AdminApp
+
+   #--------------------------------------------------------------
+   # do some sanity checking 
+   #     -- do we have a node by this name? 
+   #--------------------------------------------------------------
+   set node [$AdminConfig getid /Node:$nodeName/]
+   puts "ex1: checking for existence of node $nodeName"
+   if {[llength $node] == 0} {
+      puts "ex1: Error -- node not found for name $nodeName"
+      return 
+   }
+
+
+   #--------------------------------------------------------------
+   #     -- was a earfile name supplied 
+   #--------------------------------------------------------------
+   if {[llength $app] == 0} {
+      puts "ex1: Error -- No application specified."
+      return 
+   }
+   #--------------------------------------------------------------
+   #     -- is a server by this name already running on the node? 
+   #--------------------------------------------------------------
+   puts "ex1: checking to see if server $serverName is already running on node $nodeName"
+   set runningServer [$AdminControl completeObjectName type=Server,node=$nodeName,process=$serverName,*]
+   if {[llength $runningServer] > 0} {
+      puts "ex1: Error -- Server $serverName already running on node $nodeName"
+      return 
+   }
+
+   #--------------------------------------------------------------
+   #     -- is a nodeSync MBean available on this node? 
+   #--------------------------------------------------------------
+   puts "ex1: checking for the existence of a NodeSync MBean on node $nodeName"
+   set nodeSync [$AdminControl completeObjectName type=NodeSync,node=$nodeName,*]
+   if {[llength $nodeSync] == 0} {
+      puts "ex1: Error -- NodeSync MBean not found for name $nodeName"
+      return 
+   }
+
+   #--------------------------------------------------------------
+   # Create a server using the supplied server name and node 
+   #--------------------------------------------------------------
+   puts "ex1: creating a server $serverName ....."
+   set name_attribute [list name $serverName]
+   set attributes     [list $name_attribute]
+   set server [$AdminConfig create Server $node $attributes] 
+ 
+   #--------------------------------------------------------------
+   # Change the list of transports associated with the WebContainer
+   # for this server.  Create one secure and one non-secure transport 
+   #--------------------------------------------------------------
+   puts "ex1: modifying HTTP port addresses"
+   set http_nonsecure_address [list [list sslEnabled false] [list address [list [list host {}] [list port 9088]]]] 
+   set http_secure_address    [list [list sslEnabled true] [list address [list [list host {}] [list port 9448]]] [list sslConfig DefaultSSLSettings]] 
+   set transports             [list transports:HTTPTransport [list $http_nonsecure_address $http_secure_address]]
+   set web_container [$AdminConfig list WebContainer $server]
+   $AdminConfig modify $web_container [list $transports]
+
+   #--------------------------------------------------------------
+   # Install an application onto this server
+   #--------------------------------------------------------------
+   puts "ex1: installing the application"
+   set app_options [list -node $nodeName -server $serverName]
+   if {[llength $appName] > 0} {
+      lappend app_options -appname $appName
+   }
+   $AdminApp install $app $app_options 
+
+   #--------------------------------------------------------------
+   # Save all the changes 
+   #--------------------------------------------------------------
+   puts "ex1: saving the configuration"
+   $AdminConfig save
+
+   #--------------------------------------------------------------
+   # Find out if serverStartupSyncEnabled is true for this node
+   # We just created this server, so if this attribute is set to
+   # "false" we have to perform a sync.  If we do not, the node we
+   # are installing on may have an out-of-date copy of the config
+   # data. 
+   #--------------------------------------------------------------
+   set enabled [$AdminControl getAttribute $nodeSync serverStartupSyncEnabled]
+   if {[string compare $enabled "false"] == 0} {
+      puts "ex1: Invoking synchronization for node $nodeSync because serverStartupSyncEnabled is set to false..."
+      $AdminControl invoke $nodeSync sync
+      puts "ex1: Done with synchronization."
+   }
+
+   #--------------------------------------------------------------
+   # start the server 
+   #--------------------------------------------------------------
+   puts "ex1: starting server $serverName ..."
+   $AdminControl startServer $serverName $nodeName 
+   puts "ex1: done."
+}
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+# <!-- if { !($argc == 3 || $argc == 4) } {
+#    puts "ex1: this script requires 3 or 4 parameters: server name, node name, ear file, and (optionally) application name"
+#    puts "e.g.:     ex1  server2 mynode c:/WebSphere/AppServer/installableApps/jmsample.ear myapp1" 
+# } else { 
+#    set serverName       [lindex $argv 0]  
+#    set nodeName         [lindex $argv 1]  
+#    set application      [lindex $argv 2]
+#    set appName          [lindex $argv 3]
+
+#    ex1 $serverName $nodeName $application $appName
+# } -->
+set serverName       "<%= node[:base_was][:was][:config][:server_name] %>"  
+set nodeName         "<%= node[:base_was][:was][:config][:node_name] %>" 
+set application      "<%= node[:base_was][:was][:config][:application] %>"
+set appName          "<%= node[:base_was][:was][:config][:application_name] %>"
+
+ex1 $serverName $nodeName $application $appName

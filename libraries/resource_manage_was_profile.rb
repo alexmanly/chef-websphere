@@ -21,7 +21,6 @@ class Chef
       attribute :starting_port, :name_attribute => true, :kind_of => String
       attribute :dmgr_host, :name_attribute => true, :kind_of => String
       attribute :dmgr_port, :name_attribute => true, :kind_of => String
-      attribute :wsadmin_jython_file, :name_attribute => true, :kind_of => String
 
     end
   end

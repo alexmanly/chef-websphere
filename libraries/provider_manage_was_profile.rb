@@ -59,12 +59,13 @@ class Chef
             template tmplt['name'] do
               path scripts_location + '/' + tmplt['name']
               source new_resource.profile_name + '/' + tmplt['name']
+              sensitive true
             end
 
             execute "execute_wasdmin_with_file_#{tmplt['name']}" do
               cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
               command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/wsadmin.sh "\
-                      "-lang jython "\
+                      "-lang jacl "\
                       "-f #{scripts_location}/#{tmplt['name']} "\
                       "-conntype SOAP "\
                       "-user #{new_resource.admin_username} "\

@@ -39,6 +39,16 @@ override_attributes(
           :admin_password => 'wasadmin',
           :dmgr_port => '28003'
         }
+      },
+      :config => {
+        :node_name => "node01",
+        :template_name => "DB2 Universal JDBC Driver Provider (XA)",
+        :ds_name => "myds",
+        :cf_name => "mycf",
+        :ds_name => "myds",
+        :server_name => "server01",
+        :application => "/opt/IBM/WebSphere85/installableApps/PerfServletApp.ear",
+        :application_name => "PerfServletApp"
       }
     }
   }
