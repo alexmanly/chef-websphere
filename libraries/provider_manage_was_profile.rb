@@ -11,87 +11,75 @@ class Chef
         true
       end
 
-      action :manage_dmgr do
-        execute "create_profile_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/bin/manageprofiles.sh -create "\
+      action :create do
+        execute "create_profile_#{new_resource.profile_type}_#{new_resource.profile_name}" do
+          command create_profile_command
+          cwd "#{new_resource.install_dir}/bin"
+          guard_interpreter :bash
+          not_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
+        end
+        start
+      end
+
+      action :delete do
+        stop
+        execute "delete_profile_#{new_resource.profile_type}_#{new_resource.profile_name}" do
+          command "#{new_resource.install_dir}/bin/manageprofiles.sh -delete "\
+                  "-profileName #{new_resource.profile_name} "
+          cwd "#{new_resource.install_dir}/bin"
+          guard_interpreter :bash
+          only_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
+        end
+      end
+
+      action :start do
+        start
+      end
+
+      action :stop do
+        stop
+      end
+
+      def create_profile_command
+        cmd = "#{new_resource.install_dir}/bin/manageprofiles.sh -create "\
                   "-profileName #{new_resource.profile_name} "\
                   "-templatePath #{new_resource.install_dir}/profileTemplates/#{new_resource.profile_type} "\
                   "-nodeName #{new_resource.node_name} "\
                   "-cellName #{new_resource.cell_name} "\
-                  "-hostName #{new_resource.host_name} "\
-                  "-enableAdminSecurity #{new_resource.enable_admin_security} "\
+                  "-hostName #{new_resource.host_name} "
+        if (new_resource.profile_type == 'dmgr') 
+          cmd = cmd + "-enableAdminSecurity #{new_resource.enable_admin_security} "\
                   "-adminUserName #{new_resource.admin_username} "\
                   "-adminPassword #{new_resource.admin_password} "\
                   "-startingPort #{new_resource.starting_port}"
-          cwd "#{new_resource.install_dir}/bin"
-          guard_interpreter :bash
-          not_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
-        end
-        start(true)
-      end
-
-      action :manage_node do
-        execute "create_profile_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/bin/manageprofiles.sh -create "\
-                  "-profileName #{new_resource.profile_name} "\
-                  "-templatePath #{new_resource.install_dir}/profileTemplates/#{new_resource.profile_type} "\
-                  "-nodeName #{new_resource.node_name} "\
-                  "-cellName #{new_resource.cell_name} "\
-                  "-hostName #{new_resource.host_name} "\
-                  "-dmgrAdminUserName #{new_resource.admin_username} "\
+        else
+          cmd = cmd + "-dmgrAdminUserName #{new_resource.admin_username} "\
                   "-dmgrAdminPassword #{new_resource.admin_password} "\
                   "-dmgrHost #{new_resource.dmgr_host} "\
                   "-dmgrPort #{new_resource.dmgr_port}"
-          cwd "#{new_resource.install_dir}/bin"
-          guard_interpreter :bash
-          not_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
         end
-        start(false)
+        return cmd
       end
 
-      action :start_dmgr do
-        start(true)
+      def start
+        execute_command(new_resource.profile_type == 'dmgr' ? 'startManager' : 'startNode', 'STARTED')
       end
 
-      action :stop_dmgr do
-        stop(true)
+      def stop
+        execute_command(new_resource.profile_type == 'dmgr' ? 'stopManager' : 'stopNode', 'stopped')
       end
 
-      action :start_node do
-        start(false)
-      end
-
-      action :stop_node do
-        stop(false)
-      end
-
-      def start(is_dmgr)
-        type = is_dmgr ? "dmgr" : "nodeagent"
-        cmd = is_dmgr ? "startManager.sh" : "startNode.sh"
-        execute "start_#{type}_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/#{cmd}"
-          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          guard_interpreter :bash
-          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{type} "\
-                 "-profileName #{new_resource.profile_name} "\
-                 "-username #{new_resource.admin_username} "\
-                 "-password #{new_resource.admin_password} | grep STARTED"
-        end
-      end
-
-      def stop(is_dmgr)
-        type = is_dmgr ? "dmgr" : "nodeagent"
-        cmd = is_dmgr ? "stopManager.sh" : "stopNode.sh"
-        execute "stop_#{type}_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/#{cmd} "\
-                  "-user #{new_resource.admin_username} "\
+      def execute_command(manage_cmd, current_status)
+        execute "#{manage_cmd}_#{new_resource.profile_type}_#{new_resource.profile_name}" do
+          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/#{manage_cmd}.sh "\
+                  "-username #{new_resource.admin_username} "\
                   "-password #{new_resource.admin_password}"
           cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
           guard_interpreter :bash
-          only_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{type} "\
-                  "-profileName #{new_resource.profile_name} "\
-                  "-username #{new_resource.admin_username} "\
-                  "-password #{new_resource.admin_password} | grep STARTED"
+          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{new_resource.profile_type} "\
+                 "-profileName #{new_resource.profile_name} "\
+                 "-username #{new_resource.admin_username} "\
+                 "-password #{new_resource.admin_password} | grep #{current_status}"
         end
       end
     end

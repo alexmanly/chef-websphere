@@ -12,6 +12,6 @@ node[:base_was][:was][:profiles].each do | profile_name,  profile |
     starting_port profile[:starting_port]
     dmgr_host profile[:dmgr_host]
     dmgr_port profile[:dmgr_port]
-    action (profile[:type] == 'dmgr') ? :manage_dmgr : :manage_node
+    action :create
   end
 end

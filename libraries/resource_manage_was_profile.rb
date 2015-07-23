@@ -6,8 +6,8 @@ class Chef
       provides :was_manage_profile
 
       self.resource_name = :was_manage_profile
-      actions :manage_dmgr, :start_dmgr, :stop_dmgr, :manage_node, :start_node, :stop_node
-      default_action :start_node
+      actions :create, :delete, :start, :stop
+      default_action :start
 
       attribute :install_dir, :name_attribute => true, :kind_of => String
       attribute :profile_name, :name_attribute => true, :kind_of => String
