@@ -1,27 +1,17 @@
-was_manage_profile "create_dmgr_#{node[:base_was][:was][:profiles][:dmgr][:name]}"  do
-  install_dir node[:base_was][:was][:install_dir]
-  profile_name node[:base_was][:was][:profiles][:dmgr][:name]
-  profile_type node[:base_was][:was][:profiles][:dmgr][:type]
-  node_name node[:base_was][:was][:profiles][:dmgr][:name]
-  cell_name node[:base_was][:was][:profiles][:dmgr][:cell]
-  host_name node[:base_was][:was][:profiles][:dmgr][:host]
-  enable_admin_security node[:base_was][:was][:profiles][:dmgr][:enable_security]
-  admin_username node[:base_was][:was][:profiles][:dmgr][:admin_username]
-  admin_password node[:base_was][:was][:profiles][:dmgr][:admin_password]
-  starting_port node[:base_was][:was][:profiles][:dmgr][:starting_port]
-  action :manage_dmgr
-end
-
-was_manage_profile "create_node_#{node[:base_was][:was][:profiles][:node01][:name]}"  do
-  install_dir node[:base_was][:was][:install_dir]
-  profile_name node[:base_was][:was][:profiles][:node01][:name]
-  profile_type node[:base_was][:was][:profiles][:node01][:type]
-  node_name node[:base_was][:was][:profiles][:node01][:name]
-  cell_name node[:base_was][:was][:profiles][:node01][:cell]
-  host_name node[:base_was][:was][:profiles][:node01][:host]
-  admin_username node[:base_was][:was][:profiles][:dmgr][:admin_username]
-  admin_password node[:base_was][:was][:profiles][:dmgr][:admin_password]
-  dmgr_host node[:base_was][:was][:profiles][:dmgr][:host]
-  dmgr_port node[:base_was][:was][:profiles][:dmgr][:dmgr_port]
-  action :manage_node
+node[:base_was][:was][:profiles].each do | profile_name,  profile |
+  was_manage_profile "create_#{profile[:type]}_#{profile_name}"  do
+    install_dir node[:base_was][:was][:install_dir]
+    profile_name "#{profile_name}"
+    profile_type profile[:type]
+    node_name "#{profile_name}"
+    cell_name profile[:cell]
+    host_name profile[:host]
+    enable_admin_security profile[:enable_security]
+    admin_username profile[:admin_username]
+    admin_password profile[:admin_password]
+    starting_port profile[:starting_port]
+    dmgr_host profile[:dmgr_host]
+    dmgr_port profile[:dmgr_port]
+    action (profile[:type] == 'dmgr') ? :manage_dmgr : :manage_node
+  end
 end

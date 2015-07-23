@@ -24,7 +24,8 @@ class Chef
                   "-adminPassword #{new_resource.admin_password} "\
                   "-startingPort #{new_resource.starting_port}"
           cwd "#{new_resource.install_dir}/bin"
-          not_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh") end
+          guard_interpreter :bash
+          not_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
         end
         start(true)
       end
@@ -42,7 +43,8 @@ class Chef
                   "-dmgrHost #{new_resource.dmgr_host} "\
                   "-dmgrPort #{new_resource.dmgr_port}"
           cwd "#{new_resource.install_dir}/bin"
-          not_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh") end
+          guard_interpreter :bash
+          not_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
         end
         start(false)
       end

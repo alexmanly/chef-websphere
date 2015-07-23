@@ -28,17 +28,18 @@ default[:base_was][:was][:install_file_uris] = [ "https://s3-eu-west-1.amazonaws
                                                  "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_2of3.zip",
                                                  "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_of3.zip" ]
 
-default[:base_was][:was][:profiles][:dmgr][:name] = 'Dmgr01'
-default[:base_was][:was][:profiles][:dmgr][:type] = 'dmgr'
-default[:base_was][:was][:profiles][:dmgr][:cell] = 'cell01'
-default[:base_was][:was][:profiles][:dmgr][:host] = node[:base_was][:hostname]
-default[:base_was][:was][:profiles][:dmgr][:enable_security] = 'true'
-default[:base_was][:was][:profiles][:dmgr][:admin_username] = 'wasadmin'
-default[:base_was][:was][:profiles][:dmgr][:admin_password] = 'wasadmin'
-default[:base_was][:was][:profiles][:dmgr][:starting_port] = '28000'
-default[:base_was][:was][:profiles][:dmgr][:dmgr_port] = '28003'
+default[:base_was][:was][:profiles][:Dmgr01][:type] = 'dmgr'
+default[:base_was][:was][:profiles][:Dmgr01][:cell] = 'cell01'
+default[:base_was][:was][:profiles][:Dmgr01][:host] = node[:base_was][:hostname]
+default[:base_was][:was][:profiles][:Dmgr01][:enable_security] = 'true'
+default[:base_was][:was][:profiles][:Dmgr01][:admin_username] = 'wasadmin'
+default[:base_was][:was][:profiles][:Dmgr01][:admin_password] = 'wasadmin'
+default[:base_was][:was][:profiles][:Dmgr01][:starting_port] = '28000'
 
-default[:base_was][:was][:profiles][:node01][:name] = 'node01'
 default[:base_was][:was][:profiles][:node01][:type] = 'managed'
 default[:base_was][:was][:profiles][:node01][:cell] = 'cell01_default'
 default[:base_was][:was][:profiles][:node01][:host] = node[:base_was][:hostname]
+default[:base_was][:was][:profiles][:node01][:dmgr_host] = node[:base_was][:was][:profiles][:Dmgr01][:host]
+default[:base_was][:was][:profiles][:node01][:admin_username] = node[:base_was][:was][:profiles][:Dmgr01][:admin_username]
+default[:base_was][:was][:profiles][:node01][:admin_password] = node[:base_was][:was][:profiles][:Dmgr01][:admin_password]
+default[:base_was][:was][:profiles][:node01][:dmgr_port] = '28003'

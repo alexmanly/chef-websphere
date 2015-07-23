@@ -21,22 +21,23 @@ override_attributes(
         'https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_3of3.zip'
       ],
       :profiles => {
-        :dmgr => {
-          :name => 'Dmgr01',
+        :Dmgr01 => {
           :type => 'dmgr',
           :cell => 'cell01',
           :host => 'websphere',
           :enable_security => 'true',
           :admin_username => 'wasadmin',
           :admin_password => 'wasadmin',
-          :starting_port => '28000',
-          :dmgr_port => '28003'
+          :starting_port => '28000'
         },
         :node01 => {
-          :name => 'node01',
           :type => 'managed',
           :cell => 'cell01_default',
-          :host => 'websphere'
+          :host => 'websphere',
+          :dmgr_host => 'websphere',
+          :admin_username => 'wasadmin',
+          :admin_password => 'wasadmin',
+          :dmgr_port => '28003'
         }
       }
     }
