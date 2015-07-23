@@ -25,8 +25,8 @@ default[:base_was][:iim][:install_file_uri] = "https://s3-eu-west-1.amazonaws.co
 default[:base_was][:was][:install_dir] = node[:base_was][:ibm_home] + "/WebSphere85"
 default[:base_was][:was][:product_id] = "com.ibm.websphere.ND.v85_8.5.5000.20130514_1044"
 default[:base_was][:was][:install_file_uris] = [ "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_1of3.zip",
-												"https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_2of3.zip",
-												"https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_of3.zip" ]
+                                                 "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_2of3.zip",
+                                                 "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_of3.zip" ]
 
 default[:base_was][:was][:profiles][:dmgr][:name] = 'Dmgr01'
 default[:base_was][:was][:profiles][:dmgr][:type] = 'dmgr'
