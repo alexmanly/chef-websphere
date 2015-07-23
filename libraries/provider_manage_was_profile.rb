@@ -26,32 +26,7 @@ class Chef
           cwd "#{new_resource.install_dir}/bin"
           not_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh") end
         end
-      end
-
-      action :start_dmgr do
-        execute "start_dmgr_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/startManager.sh"
-          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          guard_interpreter :bash
-          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh dmgr "\
-                 "-profileName #{new_resource.profile_name} "\
-                 "-username #{new_resource.admin_username} "\
-                 "-password #{new_resource.admin_password} | grep STARTED"
-        end
-      end
-
-      action :stop_dmgr do
-        execute "stop_dmgr_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/stopManager.sh "\
-                  "-user #{new_resource.admin_username} "\
-                  "-password #{new_resource.admin_password}"
-          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          guard_interpreter :bash
-          only_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh dmgr "\
-                  "-profileName #{new_resource.profile_name} "\
-                  "-username #{new_resource.admin_username} "\
-                  "-password #{new_resource.admin_password} | grep STARTED"
-        end
+        start(true)
       end
 
       action :manage_node do
@@ -69,32 +44,54 @@ class Chef
           cwd "#{new_resource.install_dir}/bin"
           not_if do ::File.exists?("#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh") end
         end
+        start(false)
+      end
+
+      action :start_dmgr do
+        start(true)
+      end
+
+      action :stop_dmgr do
+        stop(true)
       end
 
       action :start_node do
-        execute "start_node_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/startNode.sh"
-          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          guard_interpreter :bash
-          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh nodeagent "\
-                  "-profileName #{new_resource.profile_name} "\
-                  "-username #{new_resource.admin_username} "\
-                  "-password #{new_resource.admin_password} | grep STARTED"
-        end
+        start(false)
       end
 
       action :stop_node do
-        execute "stop_node_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/stopNode.sh -user #{new_resource.admin_username} -password #{new_resource.admin_password}"
+        stop(false)
+      end
+
+      def start(is_dmgr)
+        type = is_dmgr ? "dmgr" : "nodeagent"
+        cmd = is_dmgr ? "startManager.sh" : "startNode.sh"
+        execute "start_#{type}_#{new_resource.profile_name}" do
+          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/#{cmd}"
           cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
           guard_interpreter :bash
-          only_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh nodeagent "\
+          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{type} "\
+                 "-profileName #{new_resource.profile_name} "\
+                 "-username #{new_resource.admin_username} "\
+                 "-password #{new_resource.admin_password} | grep STARTED"
+        end
+      end
+
+      def stop(is_dmgr)
+        type = is_dmgr ? "dmgr" : "nodeagent"
+        cmd = is_dmgr ? "stopManager.sh" : "stopNode.sh"
+        execute "stop_#{type}_#{new_resource.profile_name}" do
+          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/#{cmd} "\
+                  "-user #{new_resource.admin_username} "\
+                  "-password #{new_resource.admin_password}"
+          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
+          guard_interpreter :bash
+          only_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{type} "\
                   "-profileName #{new_resource.profile_name} "\
                   "-username #{new_resource.admin_username} "\
                   "-password #{new_resource.admin_password} | grep STARTED"
         end
       end
-
     end
   end
 end

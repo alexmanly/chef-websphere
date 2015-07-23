@@ -12,14 +12,6 @@ was_manage_profile "create_dmgr_#{node[:base_was][:was][:profiles][:dmgr][:name]
   action :manage_dmgr
 end
 
-was_manage_profile "start_dmgr_#{node[:base_was][:was][:profiles][:dmgr][:name]}" do
-  install_dir node[:base_was][:was][:install_dir]
-  profile_name node[:base_was][:was][:profiles][:dmgr][:name]
-  admin_username node[:base_was][:was][:profiles][:dmgr][:admin_username]
-  admin_password node[:base_was][:was][:profiles][:dmgr][:admin_password]
-  action :start_dmgr
-end
-
 was_manage_profile "create_node_#{node[:base_was][:was][:profiles][:node01][:name]}"  do
   install_dir node[:base_was][:was][:install_dir]
   profile_name node[:base_was][:was][:profiles][:node01][:name]
@@ -32,12 +24,4 @@ was_manage_profile "create_node_#{node[:base_was][:was][:profiles][:node01][:nam
   dmgr_host node[:base_was][:was][:profiles][:dmgr][:host]
   dmgr_port node[:base_was][:was][:profiles][:dmgr][:dmgr_port]
   action :manage_node
-end
-
-was_manage_profile "start_node_#{node[:base_was][:was][:profiles][:node01][:name]}"  do
-  install_dir node[:base_was][:was][:install_dir]
-  profile_name node[:base_was][:was][:profiles][:node01][:name]
-  admin_username node[:base_was][:was][:profiles][:dmgr][:admin_username]
-  admin_password node[:base_was][:was][:profiles][:dmgr][:admin_password]
-  action :start_node
 end
