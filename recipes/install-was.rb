@@ -18,3 +18,24 @@ iim 'install_was' do
   action :install_product
   not_if do ::File.exists?(node[:base_was][:was][:install_dir] + "/bin/manageprofiles.sh") end
 end
+
+file "/etc/profile.d/websphere.sh" do
+  action :create_if_missing
+  mode "0755"
+  content <<-EOD
+# Increase the file descriptor limit to support WAS
+# See http://pic.dhe.ibm.com/infocenter/iisinfsv/v8r5/topic/com.ibm.swg.im.iis.found.admin.common.doc/topics/t_admappsvclstr_ulimits.html
+ulimit -n 20480
+EOD
+end
+
+file "/etc/security/limits.d/websphere.conf" do
+  action :create_if_missing
+  mode "0755"
+  content <<-EOD
+# Increase the limits for the number of open files for the pam_limits module to support WAS
+# See http://pic.dhe.ibm.com/infocenter/iisinfsv/v8r5/topic/com.ibm.swg.im.iis.found.admin.common.doc/topics/t_admappsvclstr_ulimits.html
+* soft nofile 20480
+* hard nofile 20480
+EOD
+end
