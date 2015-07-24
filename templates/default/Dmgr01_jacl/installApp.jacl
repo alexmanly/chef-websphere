@@ -1,46 +1,4 @@
-# This program may be used, executed, copied, modified and distributed
-# without royalty for the purpose of developing, using, marketing, or distribution
-
-#-----------------------------------------------------------------
-# ex1.jacl - Jacl implementation of example script 1 
-#-----------------------------------------------------------------
-#
-#  The purpose of this example is to show a potentially useful
-#  sequence of common actions using the scripting client wsadmin.
-#  This example creates and modifies a server, loads an application
-#  onto the server, and starts the server.  We assume an environment
-#  in which the scripting client is attached to the Network Deployment
-#  manager, but much of this script could be used in a base install.
-#  
-#  This is a bi-modal script: it can be included in the wsadmin 
-#  command invocation like this:
-#     wsadmin -f ex1.jacl serverX nodeY c:/applicationZ myapp
-#
-#  or the script can be sourced from the wsadmin command line if:
-#     wsadmin> source ex1.jacl
-#     wsadmin> ex1 serverX nodeY c:/applicationZ myapp
-# 
-#  The script expects some parameters:
-#      arg1 - server name
-#      arg2 - node name
-#      arg3 - application 
-#      arg4 - application name (optional) 
-#
-#  This example demonstrates many wsadmin features:
-#
-#   - The use of the AdminApp object to install an application
-#   - The use of the AdminControl object to locate running MBeans 
-#   - The use of the AdminControl object to getAttributes from running MBeans 
-#   - The use of the AdminControl object to invoke operations on running MBeans 
-#   - The use of the AdminControl object's "startServer" command
-#   - The use of the AdminConfig object to create objects in the configuration
-#   - The use of the AdminConfig object to find objects in the configuration
-#   - The use of the AdminConfig object to modify objects in the configuration
-#   - The use of the AdminConfig object to save the configuration
-#   - Methods for saving and synchronizing the configuration.
-#-----------------------------------------------------------------
-
-proc ex1 {serverName nodeName args} {
+proc installApp {serverName nodeName args} {
 
    #--------------------------------------------------------------
    # check for optional argument 
@@ -105,7 +63,7 @@ proc ex1 {serverName nodeName args} {
    set name_attribute [list name $serverName]
    set attributes     [list $name_attribute]
    set server [$AdminConfig create Server $node $attributes] 
- 
+
    #--------------------------------------------------------------
    # Change the list of transports associated with the WebContainer
    # for this server.  Create one secure and one non-secure transport 
@@ -158,20 +116,6 @@ proc ex1 {serverName nodeName args} {
 #-----------------------------------------------------------------
 # Main
 #-----------------------------------------------------------------
-# <!-- if { !($argc == 3 || $argc == 4) } {
-#    puts "ex1: this script requires 3 or 4 parameters: server name, node name, ear file, and (optionally) application name"
-#    puts "e.g.:     ex1  server2 mynode c:/WebSphere/AppServer/installableApps/jmsample.ear myapp1" 
-# } else { 
-#    set serverName       [lindex $argv 0]  
-#    set nodeName         [lindex $argv 1]  
-#    set application      [lindex $argv 2]
-#    set appName          [lindex $argv 3]
-
-#    ex1 $serverName $nodeName $application $appName
-# } -->
-set serverName       "<%= node[:base_was][:was][:config][:server_name] %>"  
-set nodeName         "<%= node[:base_was][:was][:config][:node_name] %>" 
-set application      "<%= node[:base_was][:was][:config][:application] %>"
-set appName          "<%= node[:base_was][:was][:config][:application_name] %>"
-
-ex1 $serverName $nodeName $application $appName
+<% node[:base_was][:was][:application].each do |app_name, app| %>
+installApp "<%= app[:server_name] %>" "<%= app[:node_name] %>" "<%= app[:path] %>" "<%= app_name %>"
+<% end %>

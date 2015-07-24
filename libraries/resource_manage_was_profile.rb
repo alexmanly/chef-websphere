@@ -6,7 +6,7 @@ class Chef
       provides :was_manage_profile
 
       self.resource_name = :was_manage_profile
-      actions :create, :delete, :start, :stop, :wsadmin
+      actions :create, :delete, :start, :stop, :wasadmin_single_script, :wsadmin_all_scripts
       default_action :start
 
       attribute :install_dir, :name_attribute => true, :kind_of => String
@@ -21,6 +21,9 @@ class Chef
       attribute :starting_port, :name_attribute => true, :kind_of => String
       attribute :dmgr_host, :name_attribute => true, :kind_of => String
       attribute :dmgr_port, :name_attribute => true, :kind_of => String
+      attribute :script_language, :name_attribute => true, :kind_of => String
+      attribute :script_path, :name_attribute => true, :kind_of => String
+      attribute :script_name, :name_attribute => true, :kind_of => String
 
     end
   end

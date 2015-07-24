@@ -23,7 +23,24 @@ node[:base_was][:was][:profiles].each do | name,  profile |
       profile_name name
       admin_username profile[:admin_username]
       admin_password profile[:admin_password]
-      action :wsadmin
+      script_path "#{name}_jacl"
+      script_language "jacl"
+      action :wsadmin_all_scripts
+    end
+  end
+end
+
+node[:base_was][:was][:profiles].each do | name,  profile |
+  if ('dmgr' == profile[:type])
+    was_manage_profile "wsadmin_#{profile[:type]}_#{name}"  do
+      install_dir node[:base_was][:was][:install_dir]
+      profile_name name
+      admin_username profile[:admin_username]
+      admin_password profile[:admin_password]
+      script_path "#{name}_py"
+      script_language "jython"
+      script_name "installJDBC.py"
+      action :wasadmin_single_script
     end
   end
 end

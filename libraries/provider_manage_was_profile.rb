@@ -40,38 +40,52 @@ class Chef
         stop
       end
 
-      action :wsadmin do
-
-        # Create stripts directory in the cache
-        scripts_location = Chef::Config[:file_cache_path] + '/' + new_resource.profile_name
-        directory scripts_location do
-          recursive true
-          action :delete
+      action :wsadmin_all_scripts do
+        scripts_location = scripts_cache_dir
+        # Copy all scripts from the templates scritps dir to the cache scripts dir
+        run_context.cookbook_collection['base-was'].manifest['templates'].each do |tmplt|
+          if tmplt['path'].include? new_resource.script_path
+            execute_wasadmin_script(tmplt['name'], scripts_location)
+          end
         end
+      end
+
+      action :wasadmin_single_script do
+        scripts_location = Chef::Config[:file_cache_path] + '/' + new_resource.script_path
+        execute_wasadmin_script(new_resource.script_name, scripts_cache_dir)
+      end
+
+      def scripts_cache_dir
+        # Create stripts directory in the cache
+        scripts_location = Chef::Config[:file_cache_path] + '/' + new_resource.script_path
+
         directory scripts_location do
           recursive true
           action :create
         end
+        
+        return scripts_location
+      end
 
-        # Copy all scripts from the templates scritps dir to the cache scripts dir
-        run_context.cookbook_collection['base-was'].manifest['templates'].each do |tmplt|
-          if tmplt['path'].include? new_resource.profile_name
-            template tmplt['name'] do
-              path scripts_location + '/' + tmplt['name']
-              source new_resource.profile_name + '/' + tmplt['name']
-              sensitive true
-            end
+      def execute_wasadmin_script(script_name, scripts_location)
+        template script_name do
+          path scripts_location + '/' + script_name
+          source new_resource.script_path + '/' + script_name
+          sensitive true
+        end
 
-            execute "execute_wasdmin_with_file_#{tmplt['name']}" do
-              cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-              command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/wsadmin.sh "\
-                      "-lang jacl "\
-                      "-f #{scripts_location}/#{tmplt['name']} "\
-                      "-conntype SOAP "\
-                      "-user #{new_resource.admin_username} "\
-                      "-password #{new_resource.admin_password}"
-            end
-          end
+        execute "execute_wasdmin_with_file_#{script_name}" do
+          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
+          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/wsadmin.sh "\
+                  "-lang #{new_resource.script_language} "\
+                  "-f #{scripts_location}/#{script_name} "\
+                  "-conntype SOAP "\
+                  "-user #{new_resource.admin_username} "\
+                  "-password #{new_resource.admin_password}"
+        end
+
+        file "#{scripts_location}/#{script_name}" do 
+          action :delete
         end
       end
 
