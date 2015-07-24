@@ -1,3 +1,4 @@
+# Create all the profiles bases on the data passed in
 node[:base_was][:was][:profiles].each do | name,  profile |
   was_manage_profile "create_#{profile[:type]}_#{name}"  do
     install_dir node[:base_was][:was][:install_dir]
@@ -16,6 +17,21 @@ node[:base_was][:was][:profiles].each do | name,  profile |
   end
 end
 
+# Download JDBC Lib Jar file
+node[:base_was][:was][:jdbc].each do | name,  jdbc |
+  # create jdbc lib directory
+  directory node[:base_was][:was][:install_dir] + "/" + name + "/lib" do
+    recursive true
+  end
+
+  # download jdbc libs
+  remote_file jdbc[:driverPath] do
+    source jdbc[:url]
+    action :create
+    not_if do ::File.exists?(jdbc[:driverPath]) end
+  end
+end
+
 node[:base_was][:was][:profiles].each do | name,  profile |
   if ('dmgr' == profile[:type])
     was_manage_profile "wsadmin_#{profile[:type]}_#{name}"  do
@@ -27,11 +43,7 @@ node[:base_was][:was][:profiles].each do | name,  profile |
       script_language "jacl"
       action :wsadmin_all_scripts
     end
-  end
-end
 
-node[:base_was][:was][:profiles].each do | name,  profile |
-  if ('dmgr' == profile[:type])
     was_manage_profile "wsadmin_#{profile[:type]}_#{name}"  do
       install_dir node[:base_was][:was][:install_dir]
       profile_name name
@@ -44,3 +56,4 @@ node[:base_was][:was][:profiles].each do | name,  profile |
     end
   end
 end
+

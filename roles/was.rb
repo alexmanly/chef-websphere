@@ -48,32 +48,25 @@ override_attributes(
         }
       },
       :jdbc => {
-        :my_jdbc => {
+        :oracle => {
           :driverPath => '/opt/IBM/WebSphere85/oracle/lib/ojdbc6.jar',
-          :dsname => 'my_ds',
-          :dsjndiname => 'jndi_my_ds',
-          :databaseURL => 'jdbc:oracle:thin:@//10.0.0.80:1521/DB1',
-          :cfname => '',
-          :databasePasswordAlias => 'demo_user',
-          :databaseUserId => 'demo',
-          :databasePassword => 'demo',
-          :databaseDescription => 'demo oracle database',
-          :agedTimeout => '0',
-          :connectionTimeout => '1900',
-          :maxConnections => '50',
-          :minConnections => '5',
-          :purgePolicy => 'EntirePool',
-          :dsReapTime => '180',
-          :dsUnusedTimeout => '1800',
-          :stmentCacheSize => '10',
-          :jdbcj2eeAttr => '',
-          :jdbcimplclass => '',
-          :jdbcdesc => '',
-          :dsHelper => '',
-          :dsj2eeAttr => '',
-          :stuckTime => '0',
-          :stuckTimerTime => '0',
-          :stuckThreshold => '0'
+          :driverClass => 'oracle.jdbc.xa.client.OracleXADataSource',
+          :templateName => "Oracle JDBC Driver",
+          :jdbcName => "Oracle JDBC Driver (XA)",
+          :jdbcDescription => "Oracle JDBC Driver (XA)",
+          :url => "https://s3-eu-west-1.amazonaws.com/oracle-demo/ojdbc6.jar",
+          :ds => {
+            :my_ds => {
+              :dsjndiname => 'jndi_my_ds',
+              :databaseURL => 'jdbc:oracle:thin:@//10.0.0.80:1521/DB1',
+              :cfname => '',
+              :databasePasswordAlias => 'demo_user',
+              :databaseUserId => 'demo',
+              :databasePassword => 'demo',
+              :databaseDescription => 'demo oracle database',
+              :dsHelper => 'com.ibm.websphere.rsadapter.Oracle11gDataStoreHelper'
+            }
+          }
         }
       }
     }
