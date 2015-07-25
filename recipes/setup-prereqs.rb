@@ -25,6 +25,7 @@ partition 'create partition' do
   partition_number node[:base_was][:partition_number]
   mount_dir node[:base_was][:ibm_home]
   partition_size node[:base_was][:partition_size]
+  fs_type node[:base_was][:fs_type]
   action :partition_and_mount
 end
 

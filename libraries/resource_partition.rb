@@ -13,6 +13,7 @@ class Chef
       attribute :partition_number, :name_attribute => true, :kind_of => String
       attribute :mount_dir, :name_attribute => true, :kind_of => String
       attribute :partition_size, :name_attribute => true, :kind_of => String
+      attribute :fs_type, :name_attribute => true, :kind_of => String
 
     end
   end

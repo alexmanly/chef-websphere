@@ -48,7 +48,7 @@ class Chef
 		end
 
 		execute 'mkfs' do
-		  command "mkfs -t #{node[:base_was][:fs_type]} #{device}"
+		  command "mkfs -t #{new_resource.fs_type} #{device}"
 		  # only if it's not mounted already
 		  not_if "grep -qs #{new_resource.mount_dir} /proc/mounts"
 		end
