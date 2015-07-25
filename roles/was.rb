@@ -23,7 +23,6 @@ override_attributes(
         :Dmgr01 => {
           :type => 'dmgr',
           :cell => 'cell01',
-          :host => 'websphere',
           :enable_security => 'true',
           :admin_username => 'wasadmin',
           :admin_password => 'wasadmin',
@@ -32,8 +31,6 @@ override_attributes(
         :node01 => {
           :type => 'managed',
           :cell => 'cell01_default',
-          :host => 'websphere',
-          :dmgr_host => 'websphere',
           :admin_username => 'wasadmin',
           :admin_password => 'wasadmin',
           :dmgr_port => '28003'
