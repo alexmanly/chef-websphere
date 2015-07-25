@@ -1,6 +1,6 @@
 default[:base_was][:hostname] = 'websphere'
-default[:base_was][:internal_ip] = '10.0.0.90'
 default[:base_was][:hosts] =  {
+	'localhost' => '127.0.0.1',
 	'chefserver' => '10.0.0.10', 
 	'chefanalytics' => '10.0.0.20',
 	'centosweb01' => '10.0.0.30',
@@ -8,7 +8,7 @@ default[:base_was][:hosts] =  {
 	'loadbalancer' => '10.0.0.50',
 	'chefdk' => '10.0.0.60',
 	'oracledb' => '10.0.0.80',
-	node[:base_was][:hostname] => node[:base_was][:internal_ip]
+	node[:base_was][:hostname] => node[:ipaddress]
 }
 default[:base_was][:packages] = ["wget", "unzip", "gtk2.i686", "libXtst.i686"]
 default[:base_was][:ibm_home] = '/opt/IBM'

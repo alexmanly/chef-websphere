@@ -53,11 +53,15 @@ node[:base_was][:was][:profiles].each do | name,  profile |
       jdbc[:ds].each do |dsname, ds|
         db_urls[dsname] = ''
         search(:node, "role:#{ds[:chefRole]} AND chef_environment:#{node.chef_environment}").each do | server |
-          server[:oracle][:rdbms][:dbs].each do | dbs_name, bool |
-            if (dbs_name == dsname)
-              db_url = "#{ds[:databaseURLPerfix]}#{server["fqdn"]}:#{ds[:databasePort]}/#{dsname}"
-              db_urls[dbs_name] = db_url
-              log "The Chef search generated found this data source '#{dbs_name}' and generated this Oracle DB URL:- #{db_url}" 
+          if server.nil?
+            log "The Chef search found no servers based with a role 'role:#{ds[:chefRole]} and an environment '#{node.chef_environment}'.  Using the default DB URL '#{ds[:defaultDatabaseURL]}'" 
+          else 
+            server[:oracle][:rdbms][:dbs].each do | dbs_name, bool |
+              if (dbs_name == dsname)
+                db_url = "#{ds[:databaseURLPerfix]}#{server["fqdn"]}:#{ds[:databasePort]}/#{dsname}"
+                db_urls[dbs_name] = db_url
+                log "The Chef search generated found this data source '#{dbs_name}' and generated this Oracle DB URL:- #{db_url}" 
+              end
             end
           end
         end
