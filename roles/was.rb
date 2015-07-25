@@ -56,9 +56,12 @@ override_attributes(
           :jdbcDescription => "Oracle JDBC Driver (XA)",
           :url => "https://s3-eu-west-1.amazonaws.com/oracle-demo/ojdbc6.jar",
           :ds => {
-            :my_ds => {
-              :dsjndiname => 'jndi_my_ds',
-              :databaseURL => 'jdbc:oracle:thin:@//10.0.0.80:1521/DB1',
+            :DB1 => {
+              :chefRole => 'oracledb',
+              :dsjndiname => 'jndi_demo',
+              :defaultDatabaseURL => 'jdbc:oracle:thin:@//10.0.0.80:1521/DB1',
+              :databaseURLPerfix => 'jdbc:oracle:thin:@//',
+              :databasePort => '1521',
               :cfname => '',
               :databasePasswordAlias => 'demo_user',
               :databaseUserId => 'demo',

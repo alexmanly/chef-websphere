@@ -287,12 +287,27 @@ def saveConfigAndSync (  ):
 
 <% node[:base_was][:was][:jdbc].each do |jdbcname, jdbc| %>
     <% jdbc[:ds].each do |dsname, ds| %>
+        <% if @script_data[dsname].to_s == '' %>
+#--------------------------------------------------------------
+# Using default DB URL 
+#--------------------------------------------------------------
 installJDBC("<%= jdbc[:jdbcName] %>", "<%= jdbc[:templateName] %>", "<%= jdbc[:driverPath] %>", 
-            "<%= dsname %>", "<%= ds[:dsjndiname] %>", "<%= ds[:databaseURL] %>",
+            "<%= dsname %>", "<%= ds[:dsjndiname] %>", "<%= ds[:defaultDatabaseURL] %>",
             "<%= ds[:cfname] %>","<%= ds[:databasePasswordAlias] %>", "<%= ds[:databaseUserId] %>",
             "<%= ds[:databasePassword] %>", "<%= ds[:databaseDescription] %>", "0", "1900", "50", "5",
             "EntirePool", "180", "1800", "10", "", "<%= jdbc[:driverClass] %>", "<%= jdbc[:jdbcDescription] %>",
             "<%= ds[:dsHelper] %>", "", "0", "0", "0" )
+        <% else %>
+#--------------------------------------------------------------
+# Using search generated DB URL 
+#--------------------------------------------------------------
+installJDBC("<%= jdbc[:jdbcName] %>", "<%= jdbc[:templateName] %>", "<%= jdbc[:driverPath] %>", 
+            "<%= dsname %>", "<%= ds[:dsjndiname] %>", "<%= @script_data[dsname] %>",
+            "<%= ds[:cfname] %>","<%= ds[:databasePasswordAlias] %>", "<%= ds[:databaseUserId] %>",
+            "<%= ds[:databasePassword] %>", "<%= ds[:databaseDescription] %>", "0", "1900", "50", "5",
+            "EntirePool", "180", "1800", "10", "", "<%= jdbc[:driverClass] %>", "<%= jdbc[:jdbcDescription] %>",
+            "<%= ds[:dsHelper] %>", "", "0", "0", "0" )
+        <% end %> 
     <% end %>
 <% end %>
 saveConfigAndSync()

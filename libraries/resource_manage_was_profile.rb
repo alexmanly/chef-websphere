@@ -24,6 +24,7 @@ class Chef
       attribute :script_language, :name_attribute => true, :kind_of => String
       attribute :script_path, :name_attribute => true, :kind_of => String
       attribute :script_name, :name_attribute => true, :kind_of => String
+      attribute :script_data, :name_attribute => true, :kind_of => Hash, :default => {}
 
     end
   end

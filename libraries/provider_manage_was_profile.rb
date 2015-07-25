@@ -63,7 +63,7 @@ class Chef
           recursive true
           action :create
         end
-        
+
         return scripts_location
       end
 
@@ -72,6 +72,9 @@ class Chef
           path scripts_location + '/' + script_name
           source new_resource.script_path + '/' + script_name
           sensitive true
+          variables(
+            :script_data => new_resource.script_data
+          )
         end
 
         execute "execute_wasdmin_with_file_#{script_name}" do

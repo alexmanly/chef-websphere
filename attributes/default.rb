@@ -55,12 +55,15 @@ default[:base_was][:was][:jdbc][:oracle][:jdbcName] = 'Oracle JDBC Driver (XA)'
 default[:base_was][:was][:jdbc][:oracle][:jdbcDescription] = 'Oracle JDBC Driver (XA)'
 default[:base_was][:was][:jdbc][:oracle][:url] = 'https://s3-eu-west-1.amazonaws.com/oracle-demo/ojdbc6.jar'
 
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:dsjndiname] = "jndi_my_ds"
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:databaseURL] = "jdbc:oracle:thin:@//10.0.0.80:1521/DB1"
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:cfname] = ""
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:databasePasswordAlias] = "demo_user"
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:databaseUserId] = "demo"
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:databasePassword] = "demo"
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:databaseDescription] = "demo oracle database"
-default[:base_was][:was][:jdbc][:oracle][:ds][:my_ds][:dsHelper] = "com.ibm.websphere.rsadapter.Oracle11gDataStoreHelper"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:chefRole] = 'oracledb'
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:dsjndiname] = "jndi_demo"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:defaultDatabaseURL] = "jdbc:oracle:thin:@//10.0.0.80:1521/DB1"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:databaseURLPerfix] = "jdbc:oracle:thin:@//"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:databasePort] = "1521"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:cfname] = ""
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:databasePasswordAlias] = "demo_user"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:databaseUserId] = "demo"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:databasePassword] = "demo"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:databaseDescription] = "demo oracle database"
+default[:base_was][:was][:jdbc][:oracle][:ds][:DB1][:dsHelper] = "com.ibm.websphere.rsadapter.Oracle11gDataStoreHelper"
 
