@@ -1,4 +1,4 @@
-default[:base_was][:hostname] = 'websphere'
+default[:base_was][:hostname] = Chef::Config[:node_name]
 default[:base_was][:hosts] =  {
 	'localhost' => '127.0.0.1',
 	'chefserver' => '10.0.0.10', 
@@ -26,7 +26,7 @@ default[:base_was][:was][:install_dir] = node[:base_was][:ibm_home] + "/WebSpher
 default[:base_was][:was][:product_id] = "com.ibm.websphere.ND.v85_8.5.5000.20130514_1044"
 default[:base_was][:was][:install_file_uris] = [ "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_1of3.zip",
                                                  "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_2of3.zip",
-                                                 "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_of3.zip" ]
+                                                 "https://s3-eu-west-1.amazonaws.com/websphere-demo/WASND_v8.5.5_3of3.zip" ]
 
 default[:base_was][:was][:profiles][:Dmgr01][:type] = 'dmgr'
 default[:base_was][:was][:profiles][:Dmgr01][:cell] = 'cell01'
