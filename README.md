@@ -24,9 +24,9 @@ To create the instace follow these instructions:
 
 	Key Pair - <your key pair name>
 
-To bootstrap the node, make the node able to talk to the chefserver on it's internal IP and then add the role to the node using the following commands:
+To bootstrap the node, make the node able to talk to the chefserver on it's internal IP and then add the role (or recipe) to the node using the following commands:
 
-	ssh -i <your private key> root@10.0.0.90 'echo "10.0.0.10 chefserver" >> /etc/hosts;'
+	ssh -i <your private key> root@10.0.0.90 'echo "10.0.0.10 chefserver" >> /etc/hosts'
 
 Either use a role:
 
