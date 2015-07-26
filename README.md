@@ -24,15 +24,21 @@ To create the instace follow these instructions:
 
 	Key Pair - <your key pair name>
 
-To bootstrap the node and add the role to the node run the following commands:
-
-    knife role from file was.rb
+To bootstrap the node, make the node able to talk to the chefserver on it's internal IP and then add the role to the node using the following commands:
 
 	ssh -i <your private key> root@10.0.0.90 'echo "10.0.0.10 chefserver" >> /etc/hosts;'
+
+Either use a role:
+
+	knife role from file was.rb
 
 	knife bootstrap 10.0.0.90 -N websphere -x root -i <your private key>
 	
 	knife node run_list add websphere role[was]
+
+Or use a recipe:
+
+	knife bootstrap 10.0.0.90 -N websphere -x root -i <your private key> -r 'recipe[base-was]'
 	
 From the Workstation log into the node and run chef-client:
 
@@ -45,5 +51,3 @@ From the Workstation log into the node and run chef-client:
 Test the installation
 	
 	Log into the WAS Console http://10.0.0.90:28000 wasadmin/wasadmin
-
-	Note: There is a bug in the setup-iptables and the ports 28000 and 28001 are not open.  Therefore to turn off the firewall: service iptables stop
