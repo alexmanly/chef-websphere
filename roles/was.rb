@@ -3,7 +3,6 @@ description 'WebSphere Administration Server role for Centos nodes'
 run_list 'recipe[base-was]'
 override_attributes(
   :base_was => {
-    :hostname => 'websphere',
     :packages => ['wget', 'unzip', 'gtk2.i686', 'libXtst.i686'],
     :ibm_home => '/opt/IBM',
     :iim => {
