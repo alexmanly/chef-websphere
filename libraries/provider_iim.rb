@@ -34,8 +34,13 @@ class Chef
         end
 
         # create iim installation directories
-        directory new_resource.iim_install_dir
-        directory new_resource.iim_data_dir
+        directory new_resource.iim_install_dir do
+          recursive true
+        end
+        
+        directory new_resource.iim_data_dir do
+          recursive true
+        end
 
         # install IBM Installation Manager (iim)
         execute "install_iis" do
@@ -70,7 +75,9 @@ class Chef
         end
 
         # create product installation directory
-        directory new_resource.product_install_dir
+        directory new_resource.product_install_dir do
+          recursive true
+        end
 
         execute "install_product_#{new_resource.product_id}" do
           command "#{new_resource.iim_install_dir}/eclipse/tools/imcl install #{new_resource.product_id} -repositories #{download_cache_dir}/repository.config -acceptLicense -installationDirectory #{new_resource.product_install_dir} --launcher.suppressErrors -nosplash -showProgress -silent"

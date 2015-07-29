@@ -9,8 +9,8 @@ control_group "WebSphere Audit" do
       expect(port(28001)).to be_listening
     end
 
-    it "/opt/IBM should be mounted with an ext4 partition" do
-      expect(file("/opt/IBM")).to be_mounted.with( :type => "ext4" )
-    end
+    # it "/opt/IBM should be mounted with an ext4 partition" do
+    #   expect(file("/opt/IBM")).to be_mounted.with( :type => "ext4" )
+    # end
   end
 end
