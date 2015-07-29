@@ -26,27 +26,31 @@ To create the instace follow these instructions:
 
 To bootstrap the node, make the node able to talk to the chefserver on it's internal IP and then add the role (or recipe) to the node using the following commands:
 
-	ssh -i <your private key> root@10.0.0.90 'echo "10.0.0.10 chefserver" >> /etc/hosts'
+	$env:DEMO_SSH_KEY='C:\Users\Administrator\.ssh\stack.pem'
+	$env:DEMO_IP='10.0.0.90'
+	$env:DEMO_NODE_NAME='websphere'
+
+	ssh -i $env:DEMO_SSH_KEY root@$env:DEMO_IP 'echo "10.0.0.10 chefserver" >> /etc/hosts'
 
 Either use a role:
 
 	knife role from file was.rb
 
-	knife bootstrap 10.0.0.90 -N websphere -x root -i <your private key>
+	knife bootstrap $env:DEMO_IP -N $env:DEMO_NODE_NAME -x root -i $env:DEMO_SSH_KEY
 	
-	knife node run_list add websphere '''role[was]'''
+	knife node run_list add $env:DEMO_NODE_NAME '''role[was]'''
 
 Or use a recipe:
 
-	knife bootstrap 10.0.0.90 -N websphere -x root -i <your private key> -r 'recipe[base-was]'
+	knife bootstrap $env:DEMO_IP -N $env:DEMO_NODE_NAME -x root -i $env:DEMO_SSH_KEY -r 'recipe[base-was]'
 	
 From the Workstation log into the node and run chef-client:
 
-	ssh -i <your private key> root@10.0.0.90
+	ssh -i $env:DEMO_SSH_KEY root@$env:DEMO_IP
 
 	chef-client --audit-mode enabled
 
-	# Get a cup of tea, or two....this takes about 30 mins to complete. 
+	# Get a cup of tea, or two....this takes about 35 mins to complete. 
 
 Test the installation
 	

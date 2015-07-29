@@ -1,8 +1,8 @@
 # Demo Notes 
 
 	$env:DEMO_SSH_KEY='C:\Users\Administrator\.ssh\stack.pem'
-	$env:DEMO_IP='10.0.0.91'
-	$env:DEMO_NODE_NAME='websphere91'
+	$env:DEMO_IP='10.0.0.90'
+	$env:DEMO_NODE_NAME='websphere'
 
 ## Provision WebSphere
 
