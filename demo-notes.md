@@ -1,23 +1,23 @@
 # Demo Notes 
 
-	export DEMO_SSH_KEY='C:\Users\Administrator\.ssh\stack.pem'
-	export DEMO_IP=10.0.0.91
-	export DEMO_NODE_NAME=websphere91
+	$env:DEMO_SSH_KEY='C:\Users\Administrator\.ssh\stack.pem'
+	$env:DEMO_IP=10.0.0.91
+	$env:DEMO_NODE_NAME=websphere91
 
 ## Provision WebSphere
 
-	ssh -i $DEMO_SSH_KEY root@$DEMO_IP 'echo "10.0.0.10 chefserver" >> /etc/hosts'
-	knife bootstrap $DEMO_IP -N $DEMO_NODE_NAME -x root -i $DEMO_SSH_KEY
-	knife node run_list add $DEMO_NODE_NAME role[was]
-	ssh -i $DEMO_SSH_KEY root@$DEMO_IP 'chef-client --audit-mode enabled'
+	ssh -i $env:DEMO_SSH_KEY root@$env:DEMO_IP 'echo "10.0.0.10 chefserver" >> /etc/hosts'
+	knife bootstrap $env:DEMO_IP -N $env:DEMO_NODE_NAME -x root -i $env:DEMO_SSH_KEY
+	knife node run_list add $env:DEMO_NODE_NAME role[was]
+	ssh -i $env:DEMO_SSH_KEY root@$env:DEMO_IP 'chef-client --audit-mode enabled'
 
 ## Test WebSphere
 
-	https://$DEMO_IP:28001/ibm/console
+	https://$env:DEMO_IP:28001/ibm/console
 
 ## Manually Reset WebSphere Demo
 
-	ssh -i $DEMO_SSH_KEY root@$DEMO_IP
+	ssh -i $env:DEMO_SSH_KEY root@$env:DEMO_IP
 	cd /opt/IBM/WebSphere85/profiles/node01/bin
 	./stopServer.sh server01 -username wasadmin -password wasadmin
 	./stopNode.sh -username wasadmin -password wasadmin
