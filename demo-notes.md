@@ -8,7 +8,7 @@
 
 	ssh -i $env:DEMO_SSH_KEY root@$env:DEMO_IP 'echo "10.0.0.10 chefserver" >> /etc/hosts'
 	knife bootstrap $env:DEMO_IP -N $env:DEMO_NODE_NAME -x root -i $env:DEMO_SSH_KEY
-	knife node run_list add $env:DEMO_NODE_NAME role[was]
+	knife node run_list add $env:DEMO_NODE_NAME '''role[was]'''
 	ssh -i $env:DEMO_SSH_KEY root@$env:DEMO_IP 'chef-client --audit-mode enabled'
 
 ## Test WebSphere

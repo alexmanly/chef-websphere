@@ -34,7 +34,7 @@ Either use a role:
 
 	knife bootstrap 10.0.0.90 -N websphere -x root -i <your private key>
 	
-	knife node run_list add websphere role[was]
+	knife node run_list add websphere '''role[was]'''
 
 Or use a recipe:
 
@@ -44,7 +44,7 @@ From the Workstation log into the node and run chef-client:
 
 	ssh -i <your private key> root@10.0.0.90
 
-	chef-client
+	chef-client --audit-mode enabled
 
 	# Get a cup of tea, or two....this takes about 30 mins to complete. 
 
