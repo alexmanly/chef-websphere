@@ -14,7 +14,7 @@ class Chef
       end
 
       action :create do
-        converge_by("Create and start profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}") do
+        converge_by("Create and start profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}'") do
           e = execute "create_profile_#{new_resource.profile_type}_#{new_resource.profile_name}" do
             command create_profile_command
             cwd "#{new_resource.install_dir}/bin"
@@ -29,7 +29,7 @@ class Chef
       end
 
       action :delete do
-        converge_by("Stop and delete profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}") do
+        converge_by("Stop and delete profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}'") do
           stop
           e = execute "delete_profile_#{new_resource.profile_type}_#{new_resource.profile_name}" do
             command "#{new_resource.install_dir}/bin/manageprofiles.sh -delete "\
@@ -45,13 +45,13 @@ class Chef
       end
 
       action :start do
-        converge_by("Start profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}") do
+        converge_by("Start profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}'") do
           start
         end
       end
 
       action :stop do
-        converge_by("Stop profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}") do
+        converge_by("Stop profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}'") do
           stop
         end
       end
