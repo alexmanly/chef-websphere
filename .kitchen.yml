@@ -25,7 +25,7 @@ provisioner:
     audit_mode: :enabled
 
 platforms:
-  - name: centos6
+  - name: centos6was
     driver:
       box: "opscode-centos-6.6"
       # see available box urls here: https://opscode-vm-bento.s3.amazonaws.com/
