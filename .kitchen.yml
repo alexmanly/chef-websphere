@@ -25,12 +25,12 @@ provisioner:
     audit_mode: :enabled
 
 platforms:
-  - name: centos7
+  - name: centos6
     driver:
-      box: "opscode-centos-7.0"
+      box: "opscode-centos-6.6"
       # see available box urls here: https://opscode-vm-bento.s3.amazonaws.com/
-      # box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_centos-6.6_chef-provisionerless.box
-      box_url: file:///Users/amanly/chef-kits/opscode_centos-7.0_chef-provisionerless.box
+      box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_centos-6.6_chef-provisionerless.box
+      #box_url: file:///Users/amanly/chef-kits/opscode_centos-7.0_chef-provisionerless.box
       # Use the default host-only network along the NAT one. Makes life easier from a networking perspective
       network:
       - ["private_network", {ip: "192.168.56.55"}]

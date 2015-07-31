@@ -6,7 +6,7 @@ class Chef
       provides :was_manage_profile
 
       self.resource_name = :was_manage_profile
-      actions :create, :delete, :start, :stop, :wasadmin_single_script, :wsadmin_all_scripts
+      actions :create, :delete, :start, :stop, :wasadmin_single_script, :wsadmin_all_scripts, :install_jdbc_library
       default_action :start
 
       attribute :install_dir, :name_attribute => true, :kind_of => String
@@ -25,6 +25,8 @@ class Chef
       attribute :script_path, :name_attribute => true, :kind_of => String
       attribute :script_name, :name_attribute => true, :kind_of => String
       attribute :script_data, :name_attribute => true, :kind_of => Hash, :default => {}
+      attribute :jdbc, :name_attribute => true, :kind_of => Hash, :default => {}
+      attribute :jdbc_name, :name_attribute => true, :kind_of => String
 
     end
   end

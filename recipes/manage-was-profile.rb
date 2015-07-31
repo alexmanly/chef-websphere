@@ -17,18 +17,12 @@ node[:base_was][:was][:profiles].each do | name,  profile |
   end
 end
 
-# Download JDBC Lib Jar file
-node[:base_was][:was][:jdbc].each do | name,  jdbc |
-  # create jdbc lib directory
-  directory node[:base_was][:was][:install_dir] + "/" + name + "/lib" do
-    recursive true
-  end
-
-  # download jdbc libs
-  remote_file jdbc[:driverPath] do
-    source jdbc[:url]
-    action :create
-    not_if do ::File.exists?(jdbc[:driverPath]) end
+node[:base_was][:was][:jdbc].each do | jdbcname,  jdbclib |
+  was_manage_profile "install JDBC library #{jdbcname}" do
+    jdbc jdbclib
+    jdbc_name jdbcname
+    install_dir node[:base_was][:was][:install_dir]
+    action :install_jdbc_library
   end
 end
 
@@ -47,27 +41,6 @@ node[:base_was][:was][:profiles].each do | name,  profile |
       action :wsadmin_all_scripts
     end
 
-    # Generate the db URL based on a Chef search of the date source defined role and matching environments
-    db_urls = {}
-    node[:base_was][:was][:jdbc].each do | jdbcname,  jdbc |
-      jdbc[:ds].each do |dsname, ds|
-        db_urls[dsname] = ''
-        search(:node, "role:#{ds[:chefRole]} AND chef_environment:#{node.chef_environment}").each do | server |
-          if server.nil?
-            log "The Chef search found no servers based with a role 'role:#{ds[:chefRole]} and an environment '#{node.chef_environment}'.  Using the default DB URL '#{ds[:defaultDatabaseURL]}'" 
-          else 
-            server[:oracle][:rdbms][:dbs].each do | dbs_name, bool |
-              if (dbs_name == dsname)
-                db_url = "#{ds[:databaseURLPerfix]}#{server["fqdn"]}:#{ds[:databasePort]}/#{dsname}"
-                db_urls[dbs_name] = db_url
-                log "The Chef search generated found this data source '#{dbs_name}' and generated this Oracle DB URL:- #{db_url}" 
-              end
-            end
-          end
-        end
-      end
-    end
-
     was_manage_profile "wsadmin_#{profile[:type]}_#{name}"  do
       install_dir node[:base_was][:was][:install_dir]
       profile_name name
@@ -76,7 +49,7 @@ node[:base_was][:was][:profiles].each do | name,  profile |
       script_path "#{name}_py"
       script_language "jython"
       script_name "installJDBC.py"
-      script_data db_urls
+      script_data Chef::Provider::WasManageProfile.searchDBUrls(node)
       action :wasadmin_single_script
     end
   end

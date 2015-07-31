@@ -12,54 +12,61 @@ class Chef
       end
 
       action :partition_and_mount do
-      	device = new_resource.device_id + new_resource.partition_number
+      	converge_by("Partition and mount a '#{new_resource.partition_size}' file system '#{new_resource.mount_dir}'") do
+	      	device = new_resource.device_id + new_resource.partition_number
 
-		directory new_resource.mount_dir
+					directory new_resource.mount_dir do
+						recursive true
+					end
 
-		package 'parted' do
-		  action :upgrade
-		end
+					package 'parted' do
+					  action :upgrade
+					end
 
-		bash "fdisk_#{device}" do
-			user 'root'
-			cwd '/tmp'
-			notifies :run, "execute[partx_#{new_resource.device_id}]", :immediately
-		  	not_if "/sbin/fdisk -l #{new_resource.device_id} | grep #{device}"
-			## Setup the partition
-			code <<-EOF
-		/sbin/fdisk #{new_resource.device_id} <<EOC || true
-		n
-		p
-		#{new_resource.partition_number}
+					bash "fdisk_#{device}" do
+						user 'root'
+						cwd '/tmp'
+						notifies :run, "execute[partx_#{new_resource.device_id}]", :immediately
+					  	not_if "/sbin/fdisk -l #{new_resource.device_id} | grep #{device}"
+						## Setup the partition
+						code <<-EOF
+					/sbin/fdisk #{new_resource.device_id} <<EOC || true
+					n
+					p
+					#{new_resource.partition_number}
 
-		#{new_resource.partition_size}
-		w
-		EOC
-		EOF
-		end
+					#{new_resource.partition_size}
+					w
+					EOC
+					EOF
+					end
 
-		execute "partx_#{new_resource.device_id}" do
-		  command "partx -a #{new_resource.device_id}"
-		  notifies :run, "execute[partprobe_#{device}]", :immediately
-		  action :nothing
-		end
+					execute "partx_#{new_resource.device_id}" do
+					  command "partx -a #{new_resource.device_id}"
+					  notifies :run, "execute[partprobe_#{device}]", :immediately
+					  action :nothing
+					end
 
-		execute "partprobe_#{device}" do
-		  command "partprobe #{device}"
-		  notifies :run, "execute[mkfs]", :immediately
-		  action :nothing
-		end
+					execute "partprobe_#{device}" do
+					  command "partprobe #{device}"
+					  notifies :run, "execute[mkfs]", :immediately
+					  action :nothing
+					end
 
-		execute 'mkfs' do
-		  command "mkfs -t #{new_resource.fs_type} #{device}"
-		  action :nothing
-		end
+					execute 'mkfs' do
+					  command "mkfs -t #{new_resource.fs_type} #{device}"
+					  action :nothing
+					end
 
-		mount "#{new_resource.mount_dir}" do
-		  device "#{device}"
-		  action [:enable, :mount]
-		end
+					m = mount "#{new_resource.mount_dir}" do
+					  device "#{device}"
+					  action [:enable, :mount]
+					end
 
+					if (!new_resource.updated_by_last_action?)
+            new_resource.updated_by_last_action(m.updated_by_last_action?)
+          end
+				end
       end
     end
   end
