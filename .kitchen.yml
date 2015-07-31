@@ -53,3 +53,8 @@ suites:
           jdbc: 
             oracle: 
               url: file:///mnt/share/oracle/ojdbc6.jar
+              ds:
+                DB1:
+                  defaultDatabaseURL: "jdbc:oracle:thin:@//92.168.56.44:1521/DB1"
+
+# login to http://192.168.56.55:28000/ibm/console wasadmin/wasadmin

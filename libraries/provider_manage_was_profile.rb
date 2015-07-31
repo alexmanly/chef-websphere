@@ -76,18 +76,18 @@ class Chef
       end
 
       action :install_jdbc_library do
-        converge_by("Installing  JDBC Library '#{new_resource.jdbc_name}'") do
+        converge_by("Installing  JDBC Library '#{new_resource.data[:jdbcName]}'") do
           # create jdbc lib directory
-          directory "#{new_resource.install_dir}/#{new_resource.jdbc_name}/lib" do
+          directory "#{new_resource.install_dir}/#{new_resource.data[:jdbcName]}/lib" do
             recursive true
-            not_if do ::File.exists?(new_resource.jdbc[:driverPath]) end
+            not_if do ::File.exists?(new_resource.data[:driverPath]) end
           end
 
           # download jdbc libs
-          r = remote_file new_resource.jdbc[:driverPath] do
-            source new_resource.jdbc[:url]
+          r = remote_file new_resource.data[:driverPath] do
+            source new_resource.data[:jdbcUrl]
             action :create
-            not_if do ::File.exists?(new_resource.jdbc[:driverPath]) end
+            not_if do ::File.exists?(new_resource.data[:driverPath]) end
           end
 
           if (!new_resource.updated_by_last_action?)
@@ -114,7 +114,7 @@ class Chef
           source new_resource.script_path + '/' + script_name
           sensitive true
           variables(
-            :script_data => new_resource.script_data
+            :data => new_resource.data
           )
         end
 
@@ -184,37 +184,71 @@ class Chef
         end
       end
 
-      def self.searchDBUrls(node)
-        db_urls = {}
+      def self.findDmgr(node)
+        dmgr = {}
+        node[:base_was][:was][:profiles].each do | name,  profile |
+          if ('dmgr' == profile[:type])
+            dmgr[:profile] = profile
+            dmgr[:name] = name;
+            return dmgr
+          end
+        end
+        Chef::Log.error("The dmgr profile data has not been set for this node")
+        return nil
+      end
+      
+      def self.jdbcArray(node)
+        jdbc_array = []
         jdbcs = node[:base_was][:was][:jdbc] rescue nil
         if !jdbcs.nil?
           jdbcs.each do | jdbcname,  jdbc |
             jdbc[:ds].each do |dsname, ds|
-              db_urls[dsname] = ds[:defaultDatabaseURL]
-              Chef::Search::Query.new.search(:node, "role:#{ds[:chefRole]} AND chef_environment:node.chef_environment").each do | server |
-                # require 'pry'
-                # binding.pry
-                if ((server.is_a? Array) && server.empty?) || ((server.is_a? Fixnum) && server == 0)
-                  Chef::Log.info("The Chef search found no servers based with a role 'role:#{ds[:chefRole]} and an environment '#{node.chef_environment}'.  Using the default DB URL '#{ds[:defaultDatabaseURL]}'") 
-                else
-                  dbs = server[:oracle][:rdbms][:dbs] rescue nil
-                  if !dbs.nil?     
-                    dbs.each do | dbs_name, bool |
-                      if (dbs_name == dsname)
-                        db_url = "#{ds[:databaseURLPerfix]}#{server["fqdn"]}:#{ds[:databasePort]}/#{dsname}"
-                        db_urls[dbs_name] = db_url
-                        Chef::Log.info("The Chef search generated found this data source '#{dbs_name}' and generated this Oracle DB URL:- #{db_url}")
-                      end
-                    end
+              jdbc_array << {
+                :jdbcName => jdbcname,
+                :jdbcUrl => jdbc[:url],
+                :templateName => jdbc[:templateName],
+                :driverPath => jdbc[:driverPath],
+                :driverClass => jdbc[:driverClass],
+                :jdbcDescription => jdbc[:jdbcDescription],
+                :dataSourceName => dsname,
+                :dsjndiname => ds[:dsjndiname],
+                :dsUrl => search_DB_URL(dsname, ds, node.chef_environment),
+                :cfname => ds[:cfname],
+                :databasePasswordAlias => ds[:databasePasswordAlias],
+                :databaseUserId => ds[:databaseUserId],
+                :databasePassword => ds[:databasePassword],
+                :databaseDescription => ds[:databaseDescription],
+                :dsHelper => ds[:dsHelper]
+              }
+            end
+          end
+        end
+        return jdbc_array
+      end
+
+      def self.search_DB_URL(dsname, ds, env_name)
+        dbServers = Chef::Search::Query.new.search(:node, "role:#{ds[:chefRole]} AND chef_environment:#{env_name}")
+        unless dbServers.empty?
+          dbServers.each do | server |
+            # require 'pry'
+            # binding.pry
+            unless ((server.is_a? Array) && server.empty?) || ((server.is_a? Fixnum) && server == 0)
+              dbs = server[:oracle][:rdbms][:dbs] rescue nil
+              if !dbs.nil?     
+                dbs.each do | dbs_name, bool |
+                  if (dbs_name == dsname)
+                    searchUrl = "#{ds[:databaseURLPerfix]}#{server["fqdn"]}:#{ds[:databasePort]}/#{dsname}"
+                    Chef::Log.info("The Chef search generated found this data source '#{dsname}' and generated this Oracle DB URL:- #{searchUrl}")
+                    return searchUrl
                   end
                 end
               end
             end
           end
         end
-        return db_urls
+        Chef::Log.info("The Chef search found no servers based with a role '#{ds[:chefRole]} and an environment '#{env_name}'.  Using the default DB URL '#{ds[:defaultDatabaseURL]}'") 
+        return ds[:defaultDatabaseURL]
       end
-
     end
   end
 end
