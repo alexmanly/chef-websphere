@@ -18,6 +18,9 @@ default[:base_was][:partition_number] = '2'
 default[:base_was][:partition_size] = '+7G'
 default[:base_was][:fs_type] = 'ext4'
 
+default[:base_was][:user] = 'root'
+default[:base_was][:group] = 'root'
+default[:base_was][:iim][:access_mode] = 'admin' # 'nonAdmin' or 'group'
 default[:base_was][:iim][:install_dir] = node[:base_was][:ibm_home] + "/iim"
 default[:base_was][:iim][:install_data_dir] = node[:base_was][:ibm_home] + "/iim-data"
 default[:base_was][:iim][:install_file_uri] = "https://s3-eu-west-1.amazonaws.com/websphere-demo/Install_Mgr_v1.6.2_Lnx_WASv8.5.5.zip"

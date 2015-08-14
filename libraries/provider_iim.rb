@@ -13,105 +13,156 @@ class Chef
 
       action :install_iim do
         converge_by("Install IBM Installation Manager into directory #{new_resource.iim_install_dir}") do
-          download_cache_dir = Chef::Config[:file_cache_path] + '/iim'
+          
+          if new_resource.access_mode == 'admin' and new_resource.user != 'root' 
+            raise "Installing im with admin access rights requires that node[:base_was][:user] is set to root"
+          end
+
+          if !(new_resource.access_mode == 'admin' || new_resource.access_mode == 'nonAdmin' || new_resource.access_mode == 'group')
+            raise "Only the following values for node[:base_was][:iim][:access_mode] are allowed: admin nonAdmin group."
+          end
+
+          iim_cache_dir = "#{::File.join(Chef::Config[:file_cache_path], 'iim')}"
+          iim_install_dir = new_resource.iim_install_dir
+          iim_data_dir = new_resource.iim_data_dir
+
+          updates = []
 
           # create download cache directory
-          directory download_cache_dir
+          [iim_cache_dir, iim_install_dir, iim_data_dir].each do | dirname |
+            dir = directory dirname do
+              group new_resource.group
+              owner new_resource.user
+              mode '0755'
+              recursive true
+            end
+            updates << [dir.updated?]
+          end
 
-          zip_file = "#{download_cache_dir}/" + ::File.basename(::URI.parse(new_resource.iim_uri).path)
+          zip_file = "#{::File.join(iim_cache_dir, ::File.basename(::URI.parse(new_resource.iim_uri).path))}"
 
           # download source package
-          remote_file zip_file do
+          rfile = remote_file zip_file do
             source new_resource.iim_uri
-            action :create
-            not_if do ::File.directory?(new_resource.iim_install_dir) end
+            user new_resource.user
+            group new_resource.group
+            not_if do ::File.exists?(zip_file) end
           end
+          updates << [rfile.updated?]
 
           # upzip source package into cache
-          execute "unzip_iis_pkg_to_cache" do
-            command "/usr/bin/unzip -o #{zip_file} -d #{download_cache_dir}"
-            cwd download_cache_dir
+          e1 = execute "unzip_iis_pkg_to_cache" do
+            command "/usr/bin/unzip -o #{zip_file} -d #{iim_cache_dir}"
+            cwd iim_cache_dir
+            user new_resource.user
+            group new_resource.group
             only_if do ::File.exists?("#{zip_file}") end
           end
-
-          # create iim installation directories
-          directory new_resource.iim_install_dir do
-            recursive true
-          end
-          
-          directory new_resource.iim_data_dir do
-            recursive true
-          end
+          updates << [e1.updated?]
 
           # install IBM Installation Manager (iim)
-          e = execute "install_iis" do
-            command "#{download_cache_dir}/installc  -acceptLicense -accessRights admin -installationDirectory #{new_resource.iim_install_dir} -dataLocation #{new_resource.iim_data_dir} -silent"
-            cwd download_cache_dir
-            not_if do ::File.exists?(new_resource.iim_install_dir + "/eclipse/tools/imcl") end
+          e2 = execute "install_iis" do
+            command "#{iim_cache_dir}/installc \
+                    -acceptLicense \
+                    -accessRights #{new_resource.access_mode} \
+                    -installationDirectory #{new_resource.iim_install_dir} \
+                    -dataLocation #{new_resource.iim_data_dir} -silent \
+                    -log #{::File.join(iim_cache_dir, 'iis_install.log')}"
+            cwd iim_cache_dir
+            user new_resource.user
+            group new_resource.group
+            not_if do ::File.exists?(::File.join(iim_install_dir, 'eclipse', 'tools', 'imcl')) end
           end
+          updates << [e2.updated?]
 
-          if (!new_resource.updated_by_last_action?)
-            new_resource.updated_by_last_action(e.updated_by_last_action?)
-          end
-        end
-      end
+          new_resource.updated_by_last_action(updates.any?)
+        end # converge_by
+      end # action :install_iim
 
       action :install_product do
         converge_by("Install IBM product '#{new_resource.product_id}' into directory #{new_resource.product_install_dir}") do
-          download_cache_dir = Chef::Config[:file_cache_path] + '/ibm_product'
+          product_cache_dir = "#{::File.join(Chef::Config[:file_cache_path], 'ibm_product')}"
+
+          updates = []
 
           # create download cache directory
-          directory download_cache_dir do
+          dir1_resource = directory product_cache_dir do
+            group new_resource.group
+            owner new_resource.user
+            mode '0755'
             recursive true
           end
+          updates << [dir1_resource.updated?]
 
           new_resource.product_uris.each do |uri|
-            zip_file = "#{download_cache_dir}/" + ::File.basename(::URI.parse(uri).path)
+            zip_file = "#{::File.join(product_cache_dir, ::File.basename(::URI.parse(uri).path))}"
 
             # download source package
-            remote_file zip_file do
+            rfile_resource = remote_file zip_file do
               source uri
-              action :create
+              user new_resource.user
+              group new_resource.group
               not_if do ::File.directory?(new_resource.product_install_dir) end
             end
+            updates << [rfile_resource.updated?]
 
             # upzip source package into cache
-            execute "unzip_was_pkg_to_cache" do
-              command "/usr/bin/unzip -o #{zip_file} -d #{download_cache_dir}"
-              cwd download_cache_dir
+            exe1_resource = execute "unzip_was_pkg_to_cache" do
+              command "/usr/bin/unzip -o #{zip_file} -d #{product_cache_dir}"
+              cwd product_cache_dir
+              user new_resource.user
+              group new_resource.group
               only_if do ::File.exists?("#{zip_file}") end
             end
-          end
+            updates << [exe1_resource.updated?]
+          end # each loop
 
           # create product installation directory
-          directory new_resource.product_install_dir do
+          dir2_resource = directory new_resource.product_install_dir do
+            group new_resource.group
+            owner new_resource.user
+            mode '0755'
             recursive true
           end
+          updates << [dir2_resource.updated?]
 
-          e = execute "install_product_#{new_resource.product_id}" do
-            command "#{new_resource.iim_install_dir}/eclipse/tools/imcl install #{new_resource.product_id} -repositories #{download_cache_dir}/repository.config -acceptLicense -installationDirectory #{new_resource.product_install_dir} --launcher.suppressErrors -nosplash -showProgress -silent"
-            cwd "#{new_resource.iim_install_dir}/eclipse/tools"
-            only_if do ::File.exists?(new_resource.iim_install_dir + "/eclipse/tools/imcl") end
+          exe2_resource = execute "install_product_#{new_resource.product_id}" do
+            command "#{new_resource.iim_install_dir}/eclipse/tools/imcl \
+                    install #{new_resource.product_id} \
+                    -repositories #{product_cache_dir}/repository.config \
+                    -acceptLicense \
+                    -installationDirectory #{new_resource.product_install_dir} \
+                    --launcher.suppressErrors \
+                    -nosplash \
+                    -showProgress \
+                    -silent\
+                    -log #{::File.join(product_cache_dir, '#{new_resource.product_id}_install.log')}"
+            cwd "#{::File.join(new_resource.iim_install_dir, 'eclipse', 'tools')}"
+            user new_resource.user
+            group new_resource.group
+            only_if do ::File.exists?(::File.join(new_resource.iim_install_dir, 'eclipse', 'tools', 'imcl')) end
           end
-
-          if !new_resource.updated_by_last_action? do
-            new_resource.updated_by_last_action(e.updated_by_last_action?)
-          end
+          updates << [exe2_resource.updated?]
 
           if new_resource.product_id.include? "websphere"
-            file "/etc/profile.d/websphere.sh" do
+            f1_resource = file "/etc/profile.d/websphere.sh" do
               action :create_if_missing
               mode "0755"
+              group new_resource.group
+              owner new_resource.user
               content <<-EOD
             # Increase the file descriptor limit to support WAS
             # See http://pic.dhe.ibm.com/infocenter/iisinfsv/v8r5/topic/com.ibm.swg.im.iis.found.admin.common.doc/topics/t_admappsvclstr_ulimits.html
             ulimit -n 20480
             EOD
             end
+            updates << [f1_resource.updated?]
 
-            file "/etc/security/limits.d/websphere.conf" do
+            f2_resource = file "/etc/security/limits.d/websphere.conf" do
               action :create_if_missing
               mode "0755"
+              group new_resource.group
+              owner new_resource.user
               content <<-EOD
             # Increase the limits for the number of open files for the pam_limits module to support WAS
             # See http://pic.dhe.ibm.com/infocenter/iisinfsv/v8r5/topic/com.ibm.swg.im.iis.found.admin.common.doc/topics/t_admappsvclstr_ulimits.html
@@ -119,10 +170,12 @@ class Chef
             * hard nofile 20480
             EOD
             end
-          end
-          end 
-        end 
-      end 
-    end
-  end
-end
+            updates << [f2_resource.updated?]
+          end # if
+
+          new_resource.updated_by_last_action(updates.any?)
+        end # converge_by
+      end # action :install_product
+    end # class Iim
+  end # class Provider
+end # class Chef

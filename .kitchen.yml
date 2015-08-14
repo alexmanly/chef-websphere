@@ -18,7 +18,7 @@ driver:
   # | |____WASND_v8.5.5_3of3.zip
   #
   synced_folders:
-  - ["/Users/amanly/chef-kits", "/mnt/share", "disabled: false"]
+  - ["~/chef-kits", "/mnt/share", "disabled: false"]
   customize:
     cpus: 4
     memory: 4096
@@ -47,7 +47,7 @@ provisioner:
 platforms:
   - name: centos6was
     driver:
-      box: "opscode-centos-6.6"
+      box: "chef/centos-6.6"
       # see available box urls here: https://opscode-vm-bento.s3.amazonaws.com/
       box_url: https://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_centos-6.6_chef-provisionerless.box
       # Use the default host-only network along the NAT one. Makes life easier from a networking perspective
@@ -63,6 +63,9 @@ suites:
     attributes:
       base_was: 
         iim: 
+          user: root
+          group: root
+          access_mode: admin
           install_file_uri: file:///mnt/share/websphere/Install_Mgr_v1.6.2_Lnx_WASv8.5.5.zip
         was: 
           install_file_uris: 
