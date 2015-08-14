@@ -52,7 +52,7 @@ class Chef
 
           # upzip source package into cache
           e1 = execute "unzip_iis_pkg_to_cache" do
-            command "/usr/bin/unzip -o #{zip_file} -d #{iim_cache_dir}"
+            command "#{::File.join('usr', 'bin' ,'unzip')} -o #{zip_file} -d #{iim_cache_dir}"
             cwd iim_cache_dir
             user new_resource.user
             group new_resource.group
@@ -62,7 +62,7 @@ class Chef
 
           # install IBM Installation Manager (iim)
           e2 = execute "install_iis" do
-            command "#{iim_cache_dir}/installc \
+            command "#{::File.join(iim_cache_dir, 'installc')} \
                     -acceptLicense \
                     -accessRights #{new_resource.access_mode} \
                     -installationDirectory #{new_resource.iim_install_dir} \
@@ -108,7 +108,7 @@ class Chef
 
             # upzip source package into cache
             exe1_resource = execute "unzip_was_pkg_to_cache" do
-              command "/usr/bin/unzip -o #{zip_file} -d #{product_cache_dir}"
+              command "#{::File.join('usr', 'bin' ,'unzip')} -o #{zip_file} -d #{product_cache_dir}"
               cwd product_cache_dir
               user new_resource.user
               group new_resource.group
@@ -127,7 +127,7 @@ class Chef
           updates << [dir2_resource.updated?]
 
           exe2_resource = execute "install_product_#{new_resource.product_id}" do
-            command "#{new_resource.iim_install_dir}/eclipse/tools/imcl \
+            command "#{::File.join(new_resource.iim_install_dir, 'eclipse', 'tools' ,'imcl')} \
                     install #{new_resource.product_id} \
                     -repositories #{product_cache_dir}/repository.config \
                     -acceptLicense \

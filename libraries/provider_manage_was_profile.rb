@@ -17,9 +17,9 @@ class Chef
         converge_by("Create and start profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}'") do
           e = execute "create_profile_#{new_resource.profile_type}_#{new_resource.profile_name}" do
             command create_profile_command
-            cwd "#{new_resource.install_dir}/bin"
+            cwd "#{::File.join(new_resource.install_dir, 'bin')}"
             guard_interpreter :bash
-            not_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
+            not_if "#{::File.join(new_resource.install_dir, 'bin', 'manageprofiles.sh')} -listProfiles | grep #{new_resource.profile_name}"
           end
           start
           if (!new_resource.updated_by_last_action?)
@@ -32,11 +32,11 @@ class Chef
         converge_by("Stop and delete profile called '#{new_resource.profile_name}' of type '#{new_resource.profile_type}'") do
           stop
           e = execute "delete_profile_#{new_resource.profile_type}_#{new_resource.profile_name}" do
-            command "#{new_resource.install_dir}/bin/manageprofiles.sh -delete "\
+            command "#{::File.join(new_resource.install_dir, 'bin', 'manageprofiles.sh')} -delete "\
                     "-profileName #{new_resource.profile_name} "
-            cwd "#{new_resource.install_dir}/bin"
+            cwd "#{::File.join(new_resource.install_dir, 'bin')}"
             guard_interpreter :bash
-            only_if "#{new_resource.install_dir}/bin/manageprofiles.sh -listProfiles | grep #{new_resource.profile_name}"
+            only_if "#{::File.join(new_resource.install_dir, 'bin', 'manageprofiles.sh')} -listProfiles | grep #{new_resource.profile_name}"
           end
           if (!new_resource.updated_by_last_action?)
             new_resource.updated_by_last_action(e.updated_by_last_action?)
@@ -78,7 +78,7 @@ class Chef
       action :install_jdbc_library do
         converge_by("Installing  JDBC Library '#{new_resource.data[:jdbcName]}'") do
           # create jdbc lib directory
-          directory "#{new_resource.install_dir}/#{new_resource.data[:jdbcName]}/lib" do
+          directory "#{::File.join(new_resource.install_dir, new_resource.data[:jdbcName], 'lib')}" do
             recursive true
             not_if do ::File.exists?(new_resource.data[:driverPath]) end
           end
@@ -98,7 +98,7 @@ class Chef
 
       def scripts_cache_dir
         # Create stripts directory in the cache
-        scripts_location = Chef::Config[:file_cache_path] + '/' + new_resource.script_path
+        scripts_location = ::File.join(Chef::Config[:file_cache_path], new_resource.script_path)
 
         directory scripts_location do
           recursive true
@@ -110,8 +110,8 @@ class Chef
 
       def execute_wasadmin_script(script_name, scripts_location)
         template script_name do
-          path scripts_location + '/' + script_name
-          source new_resource.script_path + '/' + script_name
+          path ::File.join(scripts_location, script_name)
+          source ::File.join(new_resource.script_path, script_name)
           sensitive true
           variables(
             :data => new_resource.data
@@ -119,10 +119,10 @@ class Chef
         end
 
         e = execute "execute_wasdmin_with_file_#{script_name}" do
-          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/wsadmin.sh "\
+          cwd "#{::File.join(new_resource.install_dir, 'profiles', new_resource.profile_name, 'bin')}"
+          command "#{::File.join(new_resource.install_dir, 'profiles', new_resource.profile_name, 'bin', 'wsadmin.sh')} "\
                   "-lang #{new_resource.script_language} "\
-                  "-f #{scripts_location}/#{script_name} "\
+                  "-f #{::File.join(scripts_location, script_name)} "\
                   "-conntype SOAP "\
                   "-user #{new_resource.admin_username} "\
                   "-password #{new_resource.admin_password}"
@@ -138,9 +138,9 @@ class Chef
       end
 
       def create_profile_command
-        cmd = "#{new_resource.install_dir}/bin/manageprofiles.sh -create "\
+        cmd = "#{::File.join(new_resource.install_dir, 'bin', 'manageprofiles.sh')} -create "\
                   "-profileName #{new_resource.profile_name} "\
-                  "-templatePath #{new_resource.install_dir}/profileTemplates/#{new_resource.profile_type} "\
+                  "-templatePath #{::File.join(new_resource.install_dir, 'profileTemplates', new_resource.profile_type)} "\
                   "-nodeName #{new_resource.node_name} "\
                   "-cellName #{new_resource.cell_name} "\
                   "-hostName #{new_resource.host_name} "
@@ -159,22 +159,22 @@ class Chef
       end
 
       def start
-        execute_command(new_resource.profile_type == 'dmgr' ? 'startManager' : 'startNode', 'STARTED')
+        execute_command(new_resource.profile_type == 'dmgr' ? 'startManager.sh' : 'startNode.sh', 'STARTED')
       end
 
       def stop
-        execute_command(new_resource.profile_type == 'dmgr' ? 'stopManager' : 'stopNode', 'stopped')
+        execute_command(new_resource.profile_type == 'dmgr' ? 'stopManager.sh' : 'stopNode.sh', 'stopped')
       end
 
       def execute_command(manage_cmd, current_status)
         type = new_resource.profile_type == 'dmgr' ? 'dmgr' : 'nodeagent'
         e = execute "#{manage_cmd}_#{new_resource.profile_type}_#{new_resource.profile_name}" do
-          command "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/#{manage_cmd}.sh "\
+          command "#{::File.join(new_resource.install_dir, 'profiles', new_resource.profile_name, 'bin', manage_cmd)} "\
                   "-username #{new_resource.admin_username} "\
                   "-password #{new_resource.admin_password}"
-          cwd "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin"
+          cwd "#{::File.join(new_resource.install_dir, 'profiles', new_resource.profile_name, 'bin')}"
           guard_interpreter :bash
-          not_if "#{new_resource.install_dir}/profiles/#{new_resource.profile_name}/bin/serverStatus.sh #{type} "\
+          not_if "#{::File.join(new_resource.install_dir, 'profiles', new_resource.profile_name, 'bin', 'serverStatus.sh')} #{type} "\
                  "-profileName #{new_resource.profile_name} "\
                  "-username #{new_resource.admin_username} "\
                  "-password #{new_resource.admin_password} | grep #{current_status}"
