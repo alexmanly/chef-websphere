@@ -52,7 +52,7 @@ class Chef
 
           # upzip source package into cache
           e1 = execute "unzip_iis_pkg_to_cache" do
-            command "#{::File.join('usr', 'bin' ,'unzip')} -o #{zip_file} -d #{iim_cache_dir}"
+            command "#{::File.join('/usr', 'bin' ,'unzip')} -o #{zip_file} -d #{iim_cache_dir}"
             cwd iim_cache_dir
             user new_resource.user
             group new_resource.group
@@ -108,7 +108,7 @@ class Chef
 
             # upzip source package into cache
             exe1_resource = execute "unzip_was_pkg_to_cache" do
-              command "#{::File.join('usr', 'bin' ,'unzip')} -o #{zip_file} -d #{product_cache_dir}"
+              command "#{::File.join('/usr', 'bin' ,'unzip')} -o #{zip_file} -d #{product_cache_dir}"
               cwd product_cache_dir
               user new_resource.user
               group new_resource.group
@@ -145,7 +145,7 @@ class Chef
           updates << [exe2_resource.updated?]
 
           if new_resource.product_id.include? "websphere"
-            f1_resource = file "/etc/profile.d/websphere.sh" do
+            f1_resource = file "#{::File.join('/etc', 'profile.d', 'websphere.sh')}" do
               action :create_if_missing
               mode "0755"
               group new_resource.group
@@ -158,7 +158,7 @@ class Chef
             end
             updates << [f1_resource.updated?]
 
-            f2_resource = file "/etc/security/limits.d/websphere.conf" do
+            f2_resource = file "#{::File.join('/etc', 'security', 'limits.d', 'websphere.conf')}" do
               action :create_if_missing
               mode "0755"
               group new_resource.group
