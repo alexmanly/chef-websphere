@@ -54,4 +54,4 @@ From the Workstation log into the node and run chef-client:
 
 Test the installation
 	
-	Log into the WAS Console http://10.0.0.90:28000 wasadmin/wasadmin
+	Log into the WAS Console http://10.0.0.90:28000/ibm/console wasadmin/wasadmin
